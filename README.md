@@ -1,29 +1,20 @@
 # Leptos Query
 
-[![CI](https://github.com/cloud-shuttle/leptos-query/workflows/CI/badge.svg)](https://github.com/cloud-shuttle/leptos-query/actions?query=workflow%3ACI)
-[![Crates.io](https://img.shields.io/crates/v/leptos-query)](https://crates.io/crates/leptos-query)
-[![Documentation](https://img.shields.io/badge/docs-latest-blue.svg)](https://docs.rs/leptos-query)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Rust](https://img.shields.io/badge/rust-1.70+-blue.svg)](https://www.rust-lang.org)
+A React Query inspired data fetching library for Leptos applications, providing powerful caching, background updates, and error handling capabilities.
 
-A powerful, type-safe data fetching and caching library for [Leptos](https://github.com/leptos-rs/leptos) applications, inspired by React Query/TanStack Query.
+**🚀 Now fully compatible with Leptos 0.8!**
 
-> **📦 Note**: This crate is named `leptos-query-rs` to distinguish it from the existing `leptos-query` crate on crates.io. Our implementation focuses on **comprehensive documentation**, **AI-assisted development transparency**, and **future-ready architecture**.
+## Features
 
-> **🤖 AI-Generated Code Notice**: This repository contains code that was primarily generated with the assistance of Large Language Models (LLMs). See [AI_GENERATED_DISCLAIMER.md](AI_GENERATED_DISCLAIMER.md) for full details about our AI-assisted development approach and quality assurance practices.
+- **Declarative Data Fetching**: Write queries as simple async functions
+- **Automatic Caching**: Built-in cache with configurable stale times
+- **Background Updates**: Keep data fresh with background refetching
+- **Error Handling**: Comprehensive error handling with retry logic
+- **Type Safety**: Full type safety with Rust's type system
+- **WASM Compatible**: Works in both native and web environments
+- **Leptos 0.8 Ready**: Full compatibility with the latest Leptos framework
 
-## ✨ Features
-
-- **🔄 Automatic Caching**: Intelligent cache management with configurable stale times
-- **🔄 Background Refetching**: Keep data fresh with automatic background updates
-- **🔄 Request Deduplication**: Prevent duplicate requests for the same data
-- **🔄 Optimistic Updates**: Update UI immediately while mutations are in flight
-- **🔄 Retry Logic**: Configurable retry strategies with exponential backoff
-- **🔄 Type Safety**: Full TypeScript-like type safety with Rust's type system
-- **🔄 Suspense Support**: Built-in support for React Suspense patterns
-- **🔄 Error Handling**: Comprehensive error types and handling strategies
-
-## 🚀 Quick Start
+## Quick Start
 
 ### Installation
 
@@ -31,14 +22,16 @@ Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-leptos-query-rs = "0.1.0"
+leptos-query = "0.3.0"
+leptos = "0.8"
+serde = { version = "1.0", features = ["derive"] }
 ```
 
 ### Basic Usage
 
 ```rust
 use leptos::*;
-use leptos_query_rs::*;
+use leptos_query::*;
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -48,325 +41,190 @@ struct User {
     email: String,
 }
 
-// Mock API function
 async fn fetch_user(id: u32) -> Result<User, QueryError> {
-    // Simulate API call
+    // Your async function here
     Ok(User {
         id,
-        name: format!("User {}", id),
-        email: format!("user{}@example.com", id),
+        name: "John Doe".to_string(),
+        email: "john@example.com".to_string(),
     })
 }
 
 #[component]
 fn UserProfile(user_id: u32) -> impl IntoView {
     let user_query = use_query(
-        move || &["users", &user_id.to_string()][..],
-        move || || async move { fetch_user(user_id).await },
-        QueryOptions::default()
-            .with_stale_time(Duration::from_secs(60))
+        move || QueryKey::new(&["user", &user_id.to_string()]),
+        move || async move { fetch_user(user_id).await },
+        QueryOptions::default(),
     );
 
     view! {
         <div>
-            {move || {
-                if user_query.is_loading.get() {
-                    view! { <div>"Loading..."</div> }
-                } else if let Some(error) = user_query.error.get() {
-                    view! { <div>"Error: " {error.to_string()}</div> }
-                } else if let Some(user) = user_query.data.get() {
-                    view! {
-                        <div>
-                            <h3>{user.name}</h3>
-                            <p>"Email: " {user.email}</p>
-                        </div>
-                    }
-                } else {
-                    view! { <div>"No data"</div> }
-                }
+            {move || match user_query.data.get() {
+                Some(user) => view! { <div>"User: " {user.name}</div> },
+                None if user_query.is_loading.get() => view! { <div>"Loading..."</div> },
+                None => view! { <div>"No user found"</div> },
             }}
-            <button on:click=move |_| user_query.refetch.call(())>
-                "Refresh"
-            </button>
         </div>
     }
 }
+```
 
-// Set up the app with QueryClient
+### Setup
+
+Wrap your app with the `QueryClientProvider`:
+
+```rust
 #[component]
 fn App() -> impl IntoView {
     view! {
         <QueryClientProvider>
-            <UserProfile user_id=1 />
+            <UserProfile user_id=1/>
         </QueryClientProvider>
     }
 }
 ```
 
-## 🛠️ Development
+## API Reference
 
-This project includes a comprehensive Makefile for common development tasks:
-
-```bash
-# Show all available commands
-make help
-
-# Common development workflow
-make dev          # Format, lint, and test
-make test         # Run all tests
-make doc          # Generate documentation
-make release      # Build release version
-```
-
-For a complete list of commands, run `make help`.
-
-## 📚 Documentation
-
-- **[API Reference](./docs/api-reference.md)** - Complete API documentation
-- **[Guides](./docs/guides/)** - Usage guides and tutorials
-- **[Examples](./examples/)** - Code examples and patterns
-- **[Migration Guide](./docs/migration.md)** - Coming from React Query?
-
-## 🔧 Configuration
-
-### Leptos Version Compatibility
-
-Leptos Query supports multiple Leptos versions through feature flags:
-
-```toml
-# For Leptos 0.6 (current)
-[dependencies]
-leptos-query-rs = { version = "0.1", features = ["leptos-0-6"] }
-leptos = "0.6"
-
-# For Leptos 0.8 (planned)
-[dependencies]
-leptos-query-rs = { version = "0.1", features = ["leptos-0-8"] }
-leptos = "0.8"
-
-> **Note**: Leptos 0.8 support is planned for future releases. The library currently supports Leptos 0.6 with infrastructure prepared for future version compatibility.
-```
-
-You can also detect the current Leptos version at runtime:
+### Query Hook
 
 ```rust
-use leptos_query::compat::leptos_version;
-
-let version = leptos_version();
-println!("Using Leptos version: {}", version.as_str());
+pub fn use_query<T, F, Fut>(
+    key_fn: F,
+    query_fn: impl Fn() -> Fut + Clone + Send + Sync + 'static,
+    options: QueryOptions,
+) -> QueryResult<T>
 ```
 
-### QueryClient Setup
+**Parameters:**
+- `key_fn`: Function that returns a `QueryKey` for caching
+- `query_fn`: Async function that fetches the data
+- `options`: Configuration options for the query
 
-```rust
-use leptos_query_rs::*;
-
-#[component]
-fn App() -> impl IntoView {
-    let config = QueryClientConfig::default()
-        .with_default_stale_time(Duration::from_secs(60))
-        .with_default_cache_time(Duration::from_secs(300))
-        .with_garbage_collection_interval(Duration::from_secs(60));
-
-    view! {
-        <QueryClientProvider config>
-            // Your app components
-        </QueryClientProvider>
-    }
-}
-```
+**Returns:**
+- `QueryResult<T>`: Object containing data, loading state, and actions
 
 ### Query Options
 
 ```rust
-let query = use_query(
-    || &["users", "1"][..],
-    || || async move { fetch_user(1).await },
-    QueryOptions::default()
-        .with_stale_time(Duration::from_secs(60))
-        .with_cache_time(Duration::from_secs(300))
-        .with_retry(RetryConfig {
-            max_attempts: 3,
-            delay: RetryDelay::Exponential {
-                initial: Duration::from_millis(100),
-                multiplier: 2.0,
-                max: Duration::from_secs(1),
-            },
-            jitter: false,
-        })
-        .with_refetch_interval(Duration::from_secs(30))
-        .keep_previous_data()
-        .with_suspense()
+let options = QueryOptions::default()
+    .with_stale_time(Duration::from_secs(60))
+    .with_cache_time(Duration::from_secs(300))
+    .with_refetch_interval(Duration::from_secs(30));
+```
+
+### Query Result
+
+```rust
+pub struct QueryResult<T> {
+    pub data: Signal<Option<T>>,           // The query data
+    pub error: Signal<Option<QueryError>>, // Error if any
+    pub is_loading: Signal<bool>,          // Whether loading
+    pub is_success: Signal<bool>,          // Whether succeeded
+    pub is_error: Signal<bool>,            // Whether failed
+    pub status: Signal<QueryStatus>,       // Current status
+    pub refetch: Callback<()>,             // Refetch function
+}
+```
+
+### Mutation Hook
+
+```rust
+pub fn use_mutation<TData, TError, TVariables, F, Fut>(
+    mutation_fn: F,
+    options: MutationOptions,
+) -> MutationResult<TData, TError, TVariables>
+```
+
+**Example:**
+
+```rust
+async fn create_user(user: CreateUserRequest) -> Result<User, QueryError> {
+    // Your mutation logic here
+    Ok(User { /* ... */ })
+}
+
+let mutation = use_mutation(
+    create_user,
+    MutationOptions::default()
+        .invalidate_queries(vec![QueryKeyPattern::Exact(QueryKey::from("users"))]),
 );
-```
 
-## 🔄 Mutations
-
-```rust
-#[derive(Clone, Debug, Serialize, Deserialize)]
-struct CreateUserRequest {
-    name: String,
-    email: String,
-}
-
-async fn create_user(request: CreateUserRequest) -> Result<User, QueryError> {
-    // API call to create user
-    Ok(User { id: 999, name: request.name, email: request.email })
-}
-
-#[component]
-fn CreateUserForm() -> impl IntoView {
-    let create_user_mutation = use_mutation::<User, CreateUserRequest, (), _, _>(
-        |request| async move { create_user(request).await },
-        MutationOptions::default()
-            .with_invalidates(&[&["users"][..]])
-    );
-
-    let (name, set_name) = create_signal(String::new());
-    let (email, set_email) = create_signal(String::new());
-
-    let handle_submit = move |_| {
-        let request = CreateUserRequest {
-            name: name.get(),
-            email: email.get(),
-        };
-        create_user_mutation.mutate.call(request);
-    };
-
-    view! {
-        <form on:submit=handle_submit>
-            <input
-                placeholder="Name"
-                on:input=move |ev| set_name.set(event_target_value(&ev))
-            />
-            <input
-                placeholder="Email"
-                on:input=move |ev| set_email.set(event_target_value(&ev))
-            />
-            <button type="submit" disabled=move || create_user_mutation.is_loading.get()>
-                {move || if create_user_mutation.is_loading.get() { "Creating..." } else { "Create User" }}
-            </button>
-        </form>
-    }
-}
-```
-
-## 🎯 Key Concepts
-
-### Query Keys
-Query keys are used to identify and cache data. They can be simple strings or complex arrays:
-
-```rust
-// Simple key
-|| &["users"][..]
-
-// Complex key with parameters
-|| &["users", &user_id.to_string(), "profile"][..]
-
-// Using QueryKey::new for dynamic keys
-move || {
-    let id_str = user_id.get().to_string();
-    QueryKey::new(&["users", &id_str])
-}
-```
-
-### Cache Invalidation
-Invalidate related queries when data changes:
-
-```rust
-// Invalidate all user queries
-client.invalidate_queries(&QueryKeyPattern::Prefix(QueryKey::new(&["users"])));
-
-// Invalidate specific user
-client.invalidate_queries(&QueryKeyPattern::Exact(QueryKey::new(&["users", "1"])));
-
-// Invalidate queries containing "profile"
-client.invalidate_queries(&QueryKeyPattern::Contains("profile".to_string()));
+// Execute mutation
+mutation.mutate.call(CreateUserRequest { /* ... */ });
 ```
 
 ### Error Handling
-Comprehensive error types for different scenarios:
+
+The library provides comprehensive error handling:
 
 ```rust
-match error {
-    QueryError::Network { message } => {
-        // Handle network errors
-    }
-    QueryError::Http { status, message } => {
-        // Handle HTTP errors
-    }
-    QueryError::Timeout { duration } => {
-        // Handle timeouts
-    }
-    QueryError::Serialization(message) => {
-        // Handle serialization errors
-    }
-    QueryError::Deserialization(message) => {
-        // Handle deserialization errors
-    }
-    QueryError::Custom(message) => {
-        // Handle custom errors
-    }
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum QueryError {
+    NetworkError(String),
+    SerializationError(String),
+    DeserializationError(String),
+    TimeoutError(String),
+    GenericError(String),
 }
 ```
 
-## 🎮 Interactive Demo
-
-Try our **[interactive demo](demo/static-demo.html)** to see leptos-query in action! The demo showcases:
-
-- 🔄 **Automatic Caching** - Watch data get cached and shared across components
-- 🛡️ **Error Handling** - Test error scenarios with auto-retry logic
-- 🔄 **Mutations** - Update data with optimistic UI updates
-- 📄 **Infinite Queries** - Load paginated data with infinite scrolling
-- ⚡ **Background Refetch** - Keep data fresh automatically
-- 📊 **Real-time Status** - Monitor cache, loading, and error states
-
-The demo is fully interactive and runs in your browser - no installation required!
-
-## 🚀 Advanced Features
-
-### Optimistic Updates
-Update the UI immediately while mutations are in flight:
+### Retry Configuration
 
 ```rust
-let optimistic_mutation = use_optimistic_mutation(
-    QueryKey::new(&["users", "1"]),
-    |request| async move { update_user(request).await },
-    |request| User {
-        id: 1,
-        name: request.name.clone(),
-        email: request.email.clone(),
-    }
-);
+let retry_config = RetryConfig::new(3, Duration::from_secs(1))
+    .with_max_delay(Duration::from_secs(30))
+    .with_fixed_delay()
+    .no_network_retry();
+```
+
+## Advanced Features
+
+### Query Keys
+
+Query keys are used for caching and invalidation:
+
+```rust
+// Simple key
+QueryKey::from("users")
+
+// Compound key
+QueryKey::from(["users", user_id.to_string()])
+
+// With parameters
+QueryKey::from_parts(&[user_id, filter]).unwrap()
+```
+
+### Cache Invalidation
+
+```rust
+// Invalidate specific queries
+client.remove_query(&QueryKey::from("users"));
+
+// Invalidate by pattern
+client.invalidate_queries(&QueryKeyPattern::Prefix(QueryKey::from("users")));
 ```
 
 ### Background Refetching
-Keep data fresh with automatic background updates:
 
 ```rust
-let query = use_query(
-    || &["users", "1"][..],
-    || || async move { fetch_user(1).await },
-    QueryOptions::default()
-        .with_refetch_interval(Duration::from_secs(30))
-        .with_refetch_on_window_focus()
-);
+let options = QueryOptions::default()
+    .with_refetch_interval(Duration::from_secs(30));
 ```
 
-## 🤝 Contributing
+## Examples
 
-We welcome contributions! Please see our [Contributing Guide](./CONTRIBUTING.md) for details.
+See the `examples/` directory for complete working examples:
 
-## 📄 License
+- `basic.rs`: Basic query usage
+- `mutations.rs`: Mutation examples
+- `caching.rs`: Advanced caching examples
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+## Contributing
 
-## 🙏 Acknowledgments
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-- Inspired by [React Query](https://tanstack.com/query) and [TanStack Query](https://tanstack.com/query)
-- Built for the amazing [Leptos](https://github.com/leptos-rs/leptos) framework
-- Thanks to the Rust and WebAssembly communities
+## License
 
----
-
-**Ready to build amazing reactive applications? Get started with Leptos Query today!** 🚀
+This project is licensed under the MIT License - see the LICENSE file for details.

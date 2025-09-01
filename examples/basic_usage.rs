@@ -1,4 +1,5 @@
-use leptos::*;
+use leptos::prelude::*;
+use leptos::prelude::{ElementChild, OnAttribute, Get};
 use leptos_query_rs::*;
 use leptos_query_rs::retry::QueryError;
 use serde::{Deserialize, Serialize};
@@ -46,7 +47,7 @@ async fn fetch_user(id: u32) -> Result<User, QueryError> {
             email: "john@example.com".to_string(),
         })
     } else {
-        Err(QueryError::http(404, "User not found"))
+        Err(QueryError::GenericError("User not found".to_string()))
     }
 }
 
@@ -70,7 +71,7 @@ fn UserProfile(user_id: u32) -> impl IntoView {
             let id_str = user_id.to_string();
             QueryKey::new(&["users", &id_str])
         },
-        move || move || async move { fetch_user(user_id).await },
+        move || async move { fetch_user(user_id).await },
         QueryOptions::default()
             .with_stale_time(Duration::from_secs(60))
             .with_cache_time(Duration::from_secs(300))
@@ -80,23 +81,18 @@ fn UserProfile(user_id: u32) -> impl IntoView {
         <div>
             <h2>"User Profile"</h2>
             {move || {
-                if user_query.is_loading.get() {
-                    view! { <div>"Loading..."</div> }
+                let content = if user_query.is_loading.get() {
+                    "Loading...".to_string()
                 } else if let Some(error) = user_query.error.get() {
-                    view! { <div>"Error: " {error.to_string()}</div> }
+                    format!("Error: {}", error.to_string())
                 } else if let Some(user) = user_query.data.get() {
-                    view! {
-                        <div>
-                            <h3>{user.name}</h3>
-                            <p>"Email: " {user.email}</p>
-                            <p>"ID: " {user.id}</p>
-                        </div>
-                    }
+                    format!("User: {} (Email: {}, ID: {})", user.name, user.email, user.id)
                 } else {
-                    view! { <div>"No data"</div> }
-                }
+                    "No data".to_string()
+                };
+                view! { <div><p>{content}</p></div> }.into_view()
             }}
-            <button on:click=move |_| user_query.refetch.call(())>
+            <button on:click=move |_| user_query.refetch.run(())>
                 "Refresh"
             </button>
         </div>
@@ -106,7 +102,7 @@ fn UserProfile(user_id: u32) -> impl IntoView {
 // Example component using mutations
 #[component]
 fn CreateUserForm() -> impl IntoView {
-    let create_user_mutation = use_mutation::<User, CreateUserRequest, (), _, _>(
+    let create_user_mutation = use_mutation::<User, QueryError, CreateUserRequest, _, _>(
         |request: CreateUserRequest| async move { create_user(request).await },
         MutationOptions::default()
     );
@@ -119,7 +115,7 @@ fn CreateUserForm() -> impl IntoView {
             name: name.get(),
             email: email.get(),
         };
-        create_user_mutation.mutate.call(request);
+        create_user_mutation.mutate.run(request);
     };
 
     view! {
@@ -148,13 +144,14 @@ fn CreateUserForm() -> impl IntoView {
             </form>
             
             {move || {
-                if let Some(error) = create_user_mutation.error.get() {
-                    view! { <div style="color: red">"Error: " {error.to_string()}</div> }
+                let content = if let Some(error) = create_user_mutation.error.get() {
+                    format!("Error: {}", error.to_string())
                 } else if let Some(user) = create_user_mutation.data.get() {
-                    view! { <div style="color: green">"Created user: " {user.name}</div> }
+                    format!("Created user: {}", user.name)
                 } else {
-                    view! { <div></div> }
-                }
+                    "Ready to create user".to_string()
+                };
+                view! { <div><p>{content}</p></div> }.into_view()
             }}
         </div>
     }
@@ -164,7 +161,7 @@ fn CreateUserForm() -> impl IntoView {
 #[component]
 fn App() -> impl IntoView {
     // Provide QueryClient to the app
-    provide_context(QueryClient::new(QueryClientConfig::default()));
+    provide_context(QueryClient::new());
 
     view! {
         <div>

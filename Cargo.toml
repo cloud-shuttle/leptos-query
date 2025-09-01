@@ -1,71 +1,83 @@
 [package]
 name = "leptos-query-rs"
-version = "0.1.0"
+version = "0.3.0"
 edition = "2021"
 authors = ["CloudShuttle Team"]
-description = "A powerful, type-safe data fetching and caching library for Leptos applications, inspired by React Query/TanStack Query"
+description = "A powerful, type-safe data fetching and caching library for Leptos 0.8 applications"
 license = "MIT"
-repository = "https://github.com/CloudShuttle/leptos-query"
-documentation = "https://docs.rs/leptos-query-rs"
-homepage = "https://github.com/CloudShuttle/leptos-query"
+repository = "https://github.com/cloud-shuttle/leptos-query-rs"
+keywords = ["leptos", "query", "cache", "data-fetching", "rust", "wasm", "web"]
+categories = ["web-programming", "asynchronous", "caching"]
 readme = "README.md"
-keywords = ["leptos", "query", "cache", "data-fetching", "reactive", "web", "wasm", "rust"]
-categories = ["web-programming", "caching", "asynchronous"]
-
-[lib]
-crate-type = ["cdylib", "rlib"]
+rust-version = "1.70"
 
 [dependencies]
-# Core Leptos dependencies - version controlled by features
-leptos = { version = "0.6.14", features = ["csr", "ssr"], optional = true }
-leptos-0-8 = { package = "leptos", version = "0.8.8", features = ["csr", "ssr"], optional = true }
+# Core Leptos 0.8 dependencies
+leptos = { version = "0.8", features = ["csr", "ssr"] }
 
 # Serialization
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 bincode = "1.3"
 
-# Async and futures
-tokio = { version = "1.0", features = ["sync", "time"] }
-futures = "0.3"
+# Async runtime
+tokio = { version = "1.0", features = ["rt-multi-thread", "macros", "time"] }
 
 # HTTP client
 reqwest = { version = "0.11", features = ["json"] }
 
-# Time handling
-chrono = { version = "0.4", features = ["serde"] }
+# UUID generation
+uuid = { version = "1.0", features = ["v4", "js", "serde"] }
 
 # Error handling
 thiserror = "1.0"
 
-# Base64 encoding for persistence
-base64 = "0.21"
+# Time utilities
+chrono = { version = "0.4", features = ["serde"] }
+
+# Futures
+futures = "0.3"
 
 # Web APIs
-web-sys = "0.3"
+web-sys = { version = "0.3", features = ["console"] }
 js-sys = "0.3"
 wasm-bindgen = "0.2"
 wasm-bindgen-futures = "0.4"
 
-# Utility
-uuid = { version = "1.0", features = ["v4", "js"] }
-
-[dependencies.getrandom]
-version = "0.2"
-features = ["js"]
-
+# Development dependencies
 [dev-dependencies]
 wasm-bindgen-test = "0.3"
+wasm-bindgen = "0.2"
+js-sys = "0.3"
+web-sys = { version = "0.3", features = ["console"] }
+criterion = "*"
+rand = "*"
 
 [features]
-default = ["leptos-0-6", "csr"]
-leptos-0-6 = ["leptos"]
-leptos-0-8 = ["dep:leptos-0-8"]
-csr = ["leptos/csr"]
-ssr = ["leptos/ssr", "tokio/rt-multi-thread"]
-hydrate = ["leptos/hydrate"]
-
-# Optional features
+default = ["csr"]
+csr = []
+ssr = ["tokio/rt-multi-thread"]
+hydrate = []
 devtools = []
 persistence = []
 offline = ["persistence"]
+
+[lib]
+name = "leptos_query_rs"
+path = "src/lib.rs"
+
+[[example]]
+name = "basic_usage"
+required-features = ["csr"]
+
+[[example]]
+name = "advanced_usage"
+required-features = ["csr"]
+
+[[bench]]
+name = "query_benchmarks"
+harness = false
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]

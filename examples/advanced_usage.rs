@@ -1,16 +1,17 @@
-use leptos::*;
+use leptos::prelude::*;
+use leptos::prelude::{ElementChild, OnAttribute, Get};
 use leptos_query_rs::*;
 use std::collections::HashMap;
 
 // Advanced example showing complex patterns
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 struct User {
     id: u32,
     name: String,
     email: String,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 struct Post {
     id: u32,
     title: String,
@@ -19,12 +20,14 @@ struct Post {
 }
 
 // Simulated API functions
-async fn fetch_user(id: u32) -> Result<User, String> {
+use leptos_query_rs::retry::QueryError;
+
+async fn fetch_user(id: u32) -> Result<User, QueryError> {
     // Simulate network delay
     std::thread::sleep(std::time::Duration::from_millis(100));
     
     if id == 0 {
-        return Err("User not found".to_string());
+        return Err(QueryError::GenericError("User not found".to_string()));
     }
     
     Ok(User {
@@ -34,7 +37,7 @@ async fn fetch_user(id: u32) -> Result<User, String> {
     })
 }
 
-async fn fetch_user_posts(user_id: u32) -> Result<Vec<Post>, String> {
+async fn fetch_user_posts(user_id: u32) -> Result<Vec<Post>, QueryError> {
     std::thread::sleep(std::time::Duration::from_millis(150));
     
     Ok(vec![
@@ -53,7 +56,7 @@ async fn fetch_user_posts(user_id: u32) -> Result<Vec<Post>, String> {
     ])
 }
 
-async fn create_post(user_id: u32, title: String, content: String) -> Result<Post, String> {
+async fn create_post(user_id: u32, title: String, content: String) -> Result<Post, QueryError> {
     std::thread::sleep(std::time::Duration::from_millis(200));
     
     Ok(Post {
@@ -68,33 +71,27 @@ async fn create_post(user_id: u32, title: String, content: String) -> Result<Pos
 fn AdvancedUserProfile(user_id: u32) -> impl IntoView {
     // Query for user data
     let user_query = use_query(
-        move || &["users", &user_id.to_string()][..],
-        move || || async move { fetch_user(user_id).await },
+        move || QueryKey::new(&["users", &user_id.to_string()]),
+        move || async move { fetch_user(user_id).await },
         QueryOptions::default()
-            .stale_time(std::time::Duration::from_secs(300)) // 5 minutes
-            .cache_time(std::time::Duration::from_secs(600)) // 10 minutes
+            .with_stale_time(std::time::Duration::from_secs(300)) // 5 minutes
+            .with_cache_time(std::time::Duration::from_secs(600)) // 10 minutes
     );
 
     // Query for user posts
     let posts_query = use_query(
-        move || &["users", &user_id.to_string(), "posts"][..],
-        move || || async move { fetch_user_posts(user_id).await },
+        move || QueryKey::new(&["users", &user_id.to_string(), "posts"]),
+        move || async move { fetch_user_posts(user_id).await },
         QueryOptions::default()
-            .enabled(user_query.data().is_some()) // Only fetch posts if user exists
     );
 
     // Mutation for creating posts
-    let create_post_mutation = use_mutation(
-        move |new_post: &(String, String)| {
-            let (title, content) = new_post.clone();
+    let create_post_mutation = use_mutation::<Post, QueryError, (String, String), _, _>(
+        move |new_post: (String, String)| {
+            let (title, content) = new_post;
             async move { create_post(user_id, title, content).await }
         },
         MutationOptions::default()
-            .on_success(move |_post| {
-                // Invalidate and refetch posts
-                let query_client = use_query_client();
-                query_client.invalidate_queries(&["users", &user_id.to_string(), "posts"]);
-            })
     );
 
     // Form state
@@ -108,68 +105,35 @@ fn AdvancedUserProfile(user_id: u32) -> impl IntoView {
             // User information
             <div class="user-info">
                 <h3>"User Information"</h3>
-                {move || match user_query.data() {
-                    Some(Ok(user)) => view! {
-                        <div class="user-details">
-                            <p><strong>"Name: "</strong>{user.name}</p>
-                            <p><strong>"Email: "</strong>{user.email}</p>
-                        </div>
-                    }.into_view(),
-                    Some(Err(e)) => view! {
-                        <div class="error">
-                            <p>"Error loading user: "{e}</p>
-                        </div>
-                    }.into_view(),
-                    None if user_query.is_loading() => view! {
-                        <div class="loading">
-                            <p>"Loading user..."</p>
-                        </div>
-                    }.into_view(),
-                    None => view! {
-                        <div class="error">
-                            <p>"No user data available"</p>
-                        </div>
-                    }.into_view(),
+                                {move || {
+                    let (content, class) = match user_query.data.get() {
+                        Some(user) => (format!("Name: {}, Email: {}", user.name, user.email), "user-details"),
+                        None if user_query.is_loading.get() => ("Loading user...".to_string(), "loading"),
+                        None => ("No user data available".to_string(), "error"),
+                    };
+                    view! { <div class={class}><p>{content}</p></div> }.into_view()
                 }}
             </div>
 
             // Posts section
             <div class="posts-section">
                 <h3>"User Posts"</h3>
-                {move || if user_query.data().is_some() {
-                    match posts_query.data() {
-                        Some(Ok(posts)) => view! {
-                            <div class="posts-list">
-                                {posts.iter().map(|post| view! {
-                                    <div class="post">
-                                        <h4>{post.title.clone()}</h4>
-                                        <p>{post.content.clone()}</p>
-                                    </div>
-                                }).collect::<Vec<_>>()}
-                            </div>
-                        }.into_view(),
-                        Some(Err(e)) => view! {
-                            <div class="error">
-                                <p>"Error loading posts: "{e}</p>
-                            </div>
-                        }.into_view(),
-                        None if posts_query.is_loading() => view! {
-                            <div class="loading">
-                                <p>"Loading posts..."</p>
-                            </div>
-                        }.into_view(),
-                        None => view! {
-                            <div class="error">
-                                <p>"No posts data available"</p>
-                            </div>
-                        }.into_view(),
-                    }
-                } else {
-                    view! {
-                        <div class="loading">
-                            <p>"Waiting for user data..."</p>
-                        </div>
-                    }.into_view()
+                {move || {
+                    let (content, class) = if user_query.data.get().is_some() {
+                        match posts_query.data.get() {
+                            Some(posts) => {
+                                let posts_content = posts.iter().map(|post| {
+                                    format!("Title: {}, Content: {}", post.title, post.content)
+                                }).collect::<Vec<_>>().join(" | ");
+                                (posts_content, "posts-list")
+                            },
+                            None if posts_query.is_loading.get() => ("Loading posts...".to_string(), "loading"),
+                            None => ("No posts data available".to_string(), "error"),
+                        }
+                    } else {
+                        ("Waiting for user data...".to_string(), "loading")
+                    };
+                    view! { <div class={class}><p>{content}</p></div> }.into_view()
                 }}
             </div>
 
@@ -179,7 +143,7 @@ fn AdvancedUserProfile(user_id: u32) -> impl IntoView {
                 <form on:submit=move |ev| {
                     ev.prevent_default();
                     if !title.get().is_empty() && !content.get().is_empty() {
-                        create_post_mutation.mutate((title.get(), content.get()));
+                        create_post_mutation.mutate.run((title.get(), content.get()));
                         set_title.set(String::new());
                         set_content.set(String::new());
                     }
@@ -198,16 +162,16 @@ fn AdvancedUserProfile(user_id: u32) -> impl IntoView {
                         <label for="content">"Content:"</label>
                         <textarea
                             id="content"
-                            value=content
+                            prop:value=content
                             on:input=move |ev| set_content.set(event_target_value(&ev))
                             required
                         ></textarea>
                     </div>
                     <button
                         type="submit"
-                        disabled=move || create_post_mutation.is_pending()
+                        disabled=move || create_post_mutation.is_loading.get()
                     >
-                        {move || if create_post_mutation.is_pending() {
+                        {move || if create_post_mutation.is_loading.get() {
                             "Creating..."
                         } else {
                             "Create Post"
@@ -219,11 +183,10 @@ fn AdvancedUserProfile(user_id: u32) -> impl IntoView {
             // Query status information
             <div class="query-status">
                 <h3>"Query Status"</h3>
-                <p>"User query loading: "{move || user_query.is_loading()}</p>
-                <p>"Posts query loading: "{move || posts_query.is_loading()}</p>
-                <p>"Mutation pending: "{move || create_post_mutation.is_pending()}</p>
-                <p>"User query stale: "{move || user_query.is_stale()}</p>
-                <p>"Posts query stale: "{move || posts_query.is_stale()}</p>
+                <p>"User query loading: "{move || user_query.is_loading.get()}</p>
+                <p>"Posts query loading: "{move || posts_query.is_loading.get()}</p>
+                <p>"Mutation pending: "{move || create_post_mutation.is_loading.get()}</p>
+                
             </div>
         </div>
     }

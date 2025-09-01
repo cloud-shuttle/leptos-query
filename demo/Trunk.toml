@@ -3,7 +3,7 @@ target = "index.html"
 dist = "dist"
 
 [watch]
-watch = ["src", "styles.css"]
+watch = ["src", "../src"]
 
 [serve]
 address = "127.0.0.1"

@@ -1,143 +1,85 @@
-//! # Leptos Query
+//! Leptos Query - A React Query inspired data fetching library for Leptos
 //!
-//! A powerful, type-safe data fetching and caching library for Leptos that provides:
-//! - Automatic background refetching
-//! - Request deduplication  
-//! - Optimistic updates
-//! - Intelligent caching strategies
-//! - Offline support
-//! - DevTools integration
+//! This library provides a powerful and flexible way to manage server state
+//! in Leptos applications, with features like caching, background updates,
+//! optimistic updates, and more.
+//!
+//! ## Features
+//!
+//! - **Declarative Data Fetching**: Write queries as simple functions
+//! - **Automatic Caching**: Built-in cache with configurable stale times
+//! - **Background Updates**: Keep data fresh with background refetching
+//! - **Optimistic Updates**: Update UI immediately with rollback on error
+//! - **Error Handling**: Comprehensive error handling with retry logic
+//! - **Type Safety**: Full type safety with Rust's type system
+//! - **WASM Compatible**: Works in both native and web environments
 //!
 //! ## Quick Start
 //!
 //! ```rust
 //! use leptos::*;
-//! use leptos_query_rs::*;
-//! 
-//! #[component]
-//! fn App() -> impl IntoView {
-//!     provide_context(QueryClient::new(QueryClientConfig::default()));
-//!     
-//!     view! {
-//!         <UserProfile user_id=1 />
-//!     }
+//! use leptos_query::*;
+//! use serde::{Deserialize, Serialize};
+//!
+//! #[derive(Clone, Debug, Serialize, Deserialize)]
+//! struct User {
+//!     id: u32,
+//!     name: String,
+//!     email: String,
 //! }
-//! 
-//! #[component] 
+//!
+//! async fn fetch_user(id: u32) -> Result<User, QueryError> {
+//!     // Your async function here
+//!     Ok(User {
+//!         id,
+//!         name: "John Doe".to_string(),
+//!         email: "john@example.com".to_string(),
+//!     })
+//! }
+//!
+//! #[component]
 //! fn UserProfile(user_id: u32) -> impl IntoView {
-//!     let user = use_query(
-//!         move || ["users", user_id.to_string()],
-//!         move || async move {
-//!             // Your fetch logic here
-//!             fetch_user(user_id).await
-//!         },
-//!         QueryOptions::default()
+//!     let user_query = use_query(
+//!         move || QueryKey::from(["user", user_id.to_string()]),
+//!         move || fetch_user(user_id),
+//!         QueryOptions::default(),
 //!     );
-//!     
+//!
 //!     view! {
 //!         <div>
-//!             {move || match (user.data.get(), user.is_loading.get()) {
-//!                 (Some(user_data), _) => view! { <div>{user_data.name}</div> }.into_view(),
-//!                 (None, true) => view! { <div>"Loading..."</div> }.into_view(),
-//!                 _ => view! { <div>"Error"</div> }.into_view(),
+//!             {move || match user_query.data.get() {
+//!                 Some(user) => view! { <div>"User: " {user.name}</div> },
+//!                 None if user_query.is_loading.get() => view! { <div>"Loading..."</div> },
+//!                 None => view! { <div>"No user found"</div> },
 //!             }}
 //!         </div>
 //!     }
 //! }
 //! ```
 
-// Re-export core types
-pub use client::*;
-pub use query::*;
-pub use mutation::*;
+use leptos::prelude::*;
 
-// Re-export compatibility layer
-pub use compat::*;
-
-// Modules
-pub mod compat;
 pub mod client;
 pub mod query;
 pub mod mutation;
 pub mod retry;
+pub mod types;
 pub mod dedup;
 
-// Common types
-pub mod types {
-    use std::time::{Duration};
+// Re-export main types and functions
+pub use client::QueryClient;
+pub use query::{use_query, QueryOptions, QueryResult};
+pub use mutation::{use_mutation, MutationOptions, MutationResult};
+pub use retry::{QueryError, RetryConfig, execute_with_retry};
+pub use types::{QueryKey, QueryStatus, QueryMeta, QueryKeyPattern};
+
+/// Provide the QueryClient context to the app
+#[component]
+pub fn QueryClientProvider(
+    children: Children,
+) -> impl IntoView {
+    let client = QueryClient::new();
+    provide_context(client);
     
-    /// Unique identifier for query observers
-    #[derive(Clone, Debug, Hash, PartialEq, Eq)]
-    pub struct QueryObserverId(pub uuid::Uuid);
-    
-    impl QueryObserverId {
-        pub fn new() -> Self {
-            Self(uuid::Uuid::new_v4())
-        }
-    }
-    
-    /// Unique identifier for mutations
-    #[derive(Clone, Debug, Hash, PartialEq, Eq)]
-    pub struct MutationId(pub uuid::Uuid);
-    
-    impl MutationId {
-        pub fn new() -> Self {
-            Self(uuid::Uuid::new_v4())
-        }
-    }
-    
-    /// Query status enum
-    #[derive(Clone, Debug, PartialEq)]
-    pub enum QueryStatus {
-        Idle,
-        Loading,
-        Success,
-        Error,
-    }
-    
-    /// Mutation status enum  
-    #[derive(Clone, Debug, PartialEq)]
-    pub enum MutationStatus {
-        Idle,
-        Loading,
-        Success,
-        Error,
-    }
-    
-    /// Query metadata for analytics and debugging
-    #[derive(Clone, Debug, Default)]
-    pub struct QueryMeta {
-        pub fetch_count: u32,
-        pub error_count: u32,
-        pub last_fetch_duration: Option<Duration>,
-        pub total_fetch_time: Duration,
-    }
-    
-    impl QueryMeta {
-        pub fn record_fetch(&mut self, duration: Duration) {
-            self.fetch_count += 1;
-            self.last_fetch_duration = Some(duration);
-            self.total_fetch_time += duration;
-        }
-        
-        pub fn record_error(&mut self) {
-            self.error_count += 1;
-        }
-        
-        pub fn average_fetch_time(&self) -> Option<Duration> {
-            if self.fetch_count > 0 {
-                Some(self.total_fetch_time / self.fetch_count)
-            } else {
-                None
-            }
-        }
-        
-        pub fn success_rate(&self) -> f64 {
-            if self.fetch_count == 0 {
-                0.0
-            } else {
-                (self.fetch_count - self.error_count) as f64 / self.fetch_count as f64
-            }
-        }
-    }
+    children()
 }
