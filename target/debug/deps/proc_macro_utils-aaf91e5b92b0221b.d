@@ -1,0 +1,10 @@
+/Users/peterhanssens/consulting/CloudShuttle/leptos-query/target/debug/deps/proc_macro_utils-aaf91e5b92b0221b.d: /Users/peterhanssens/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/proc-macro-utils-0.8.0/src/lib.rs /Users/peterhanssens/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/proc-macro-utils-0.8.0/src/parser.rs /Users/peterhanssens/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/proc-macro-utils-0.8.0/src/assert.rs /Users/peterhanssens/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/proc-macro-utils-0.8.0/src/__private.rs
+
+/Users/peterhanssens/consulting/CloudShuttle/leptos-query/target/debug/deps/libproc_macro_utils-aaf91e5b92b0221b.rlib: /Users/peterhanssens/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/proc-macro-utils-0.8.0/src/lib.rs /Users/peterhanssens/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/proc-macro-utils-0.8.0/src/parser.rs /Users/peterhanssens/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/proc-macro-utils-0.8.0/src/assert.rs /Users/peterhanssens/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/proc-macro-utils-0.8.0/src/__private.rs
+
+/Users/peterhanssens/consulting/CloudShuttle/leptos-query/target/debug/deps/libproc_macro_utils-aaf91e5b92b0221b.rmeta: /Users/peterhanssens/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/proc-macro-utils-0.8.0/src/lib.rs /Users/peterhanssens/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/proc-macro-utils-0.8.0/src/parser.rs /Users/peterhanssens/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/proc-macro-utils-0.8.0/src/assert.rs /Users/peterhanssens/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/proc-macro-utils-0.8.0/src/__private.rs
+
+/Users/peterhanssens/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/proc-macro-utils-0.8.0/src/lib.rs:
+/Users/peterhanssens/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/proc-macro-utils-0.8.0/src/parser.rs:
+/Users/peterhanssens/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/proc-macro-utils-0.8.0/src/assert.rs:
+/Users/peterhanssens/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/proc-macro-utils-0.8.0/src/__private.rs:

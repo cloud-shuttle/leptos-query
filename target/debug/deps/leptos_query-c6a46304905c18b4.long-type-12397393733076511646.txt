@@ -1,0 +1,3 @@
+dyn for<'a> std::ops::Fn(&'a retry::QueryError) -> bool + Send + std::marker::Sync
+dyn for<'a> std::ops::Fn(&'a retry::QueryError) -> bool + Send + std::marker::Sync: Clone
+Box<dyn for<'a> std::ops::Fn(&'a retry::QueryError) -> bool + Send + std::marker::Sync>

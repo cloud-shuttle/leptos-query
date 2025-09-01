@@ -1,0 +1,1 @@
+Box<dyn for<'a, 'b, 'c> std::ops::Fn(&'a retry::QueryError, &'b TVariables, &'c std::option::Option<()>) + Send + std::marker::Sync>

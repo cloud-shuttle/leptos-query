@@ -1,0 +1,4 @@
+dyn for<'a> std::ops::Fn(&'a TVariables) -> std::option::Option<TContext> + Send + std::marker::Sync
+dyn for<'a> std::ops::Fn(&'a TVariables) -> std::option::Option<TContext> + Send + std::marker::Sync: Clone
+Box<dyn for<'a> std::ops::Fn(&'a TVariables) -> std::option::Option<TContext> + Send + std::marker::Sync>
+std::option::Option<Box<dyn for<'a> std::ops::Fn(&'a TVariables) -> std::option::Option<TContext> + Send + std::marker::Sync>>
