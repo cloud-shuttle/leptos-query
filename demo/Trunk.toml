@@ -1,0 +1,15 @@
+[build]
+target = "index.html"
+dist = "dist"
+
+[watch]
+watch = ["src", "styles.css"]
+
+[serve]
+address = "127.0.0.1"
+port = 8080
+
+[[hooks]]
+stage = "pre_build"
+command = "sh"
+command_arguments = ["-c", "cp styles.css dist/leptos-query-demo.css"]

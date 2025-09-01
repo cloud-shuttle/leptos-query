@@ -1,0 +1,640 @@
+/* Reset and base styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background-color: #f8f9fa;
+}
+
+/* App layout */
+.app {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.app-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 2rem 0;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.header-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    text-align: center;
+}
+
+.app-header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.app-header h1 a {
+    color: white;
+    text-decoration: none;
+}
+
+.subtitle {
+    font-size: 1.1rem;
+    opacity: 0.9;
+}
+
+.app-main {
+    flex: 1;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+    width: 100%;
+}
+
+.app-footer {
+    background: #333;
+    color: white;
+    text-align: center;
+    padding: 1rem;
+    margin-top: auto;
+}
+
+.app-footer a {
+    color: #667eea;
+    text-decoration: none;
+}
+
+/* Home page */
+.home-page {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.hero-section {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.hero-section h2 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color: #333;
+}
+
+.hero-section p {
+    font-size: 1.2rem;
+    color: #666;
+    margin-bottom: 2rem;
+}
+
+.features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.feature {
+    background: white;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+.feature h3 {
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
+    color: #333;
+}
+
+.feature p {
+    color: #666;
+}
+
+.demo-section {
+    margin: 3rem 0;
+}
+
+.demo-section h3 {
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+    color: #333;
+}
+
+.examples-section {
+    margin-top: 3rem;
+}
+
+.examples-section h3 {
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
+    color: #333;
+}
+
+.example-repos {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.example-repo {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.example-repo:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.example-repo h4 {
+    color: #667eea;
+    margin-bottom: 0.5rem;
+}
+
+.example-repo p {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+/* Search section */
+.search-section {
+    margin: 2rem 0;
+}
+
+.search-input {
+    margin-bottom: 2rem;
+}
+
+.search-input input {
+    width: 100%;
+    padding: 1rem;
+    font-size: 1.1rem;
+    border: 2px solid #e1e5e9;
+    border-radius: 8px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.search-input input:focus {
+    border-color: #667eea;
+}
+
+.search-results h3 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: #333;
+}
+
+.result-count {
+    color: #666;
+    margin-bottom: 1.5rem;
+}
+
+.repos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+}
+
+.search-placeholder {
+    text-align: center;
+    color: #666;
+    font-style: italic;
+}
+
+/* Repository cards */
+.repo-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.repo-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.repo-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.repo-header h3 {
+    margin: 0;
+    font-size: 1.2rem;
+}
+
+.repo-header h3 a {
+    color: #667eea;
+    text-decoration: none;
+}
+
+.repo-header h3 a:hover {
+    text-decoration: underline;
+}
+
+.repo-stats {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.repo-description {
+    color: #666;
+    margin-bottom: 1rem;
+    line-height: 1.5;
+}
+
+.repo-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.language {
+    background: #e1e5e9;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+/* Repository page */
+.repo-page {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.repo-info {
+    background: white;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
+}
+
+.repo-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.repo-header h2 {
+    margin: 0;
+    font-size: 2rem;
+}
+
+.repo-header h2 a {
+    color: #667eea;
+    text-decoration: none;
+}
+
+.repo-stats {
+    display: flex;
+    gap: 1rem;
+    font-size: 1rem;
+    color: #666;
+}
+
+.repo-description {
+    color: #666;
+    font-size: 1.1rem;
+    line-height: 1.6;
+}
+
+.issues-section h3 {
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
+    color: #333;
+}
+
+/* Issue items */
+.issues-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.issue-item {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.issue-item:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.issue-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.5rem;
+}
+
+.issue-title {
+    margin: 0;
+    font-size: 1.1rem;
+    color: #333;
+    flex: 1;
+    margin-right: 1rem;
+}
+
+.issue-state {
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.issue-open {
+    background: #d4edda;
+    color: #155724;
+}
+
+.issue-closed {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.issue-meta {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 0.5rem;
+}
+
+.issue-labels {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.label {
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    color: white;
+    font-weight: 500;
+}
+
+/* Issue detail page */
+.issue-page {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.issue-navigation {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.back-link, .repo-link {
+    color: #667eea;
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border: 1px solid #667eea;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.back-link:hover, .repo-link:hover {
+    background-color: #667eea;
+    color: white;
+}
+
+.issue-detail {
+    background: white;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.issue-content h1 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    color: #333;
+}
+
+.issue-meta {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.issue-body {
+    margin-bottom: 2rem;
+    line-height: 1.6;
+}
+
+.issue-body p {
+    margin-bottom: 1rem;
+}
+
+.no-body {
+    color: #666;
+    font-style: italic;
+}
+
+.issue-labels h4 {
+    margin-bottom: 1rem;
+    color: #333;
+}
+
+.labels-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.issue-comments h4 {
+    margin-bottom: 1rem;
+    color: #333;
+}
+
+.comments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.no-comments {
+    color: #666;
+    font-style: italic;
+}
+
+.comment {
+    border: 1px solid #e1e5e9;
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.comment-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.comment-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+}
+
+.comment-author {
+    font-weight: 500;
+    color: #333;
+}
+
+.comment-date {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.comment-body {
+    line-height: 1.5;
+    color: #333;
+}
+
+/* Loading and error states */
+.loading, .error {
+    text-align: center;
+    padding: 2rem;
+    color: #666;
+}
+
+.error {
+    color: #721c24;
+    background: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-radius: 8px;
+}
+
+.loading-spinner {
+    text-align: center;
+    padding: 2rem;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #e1e5e9;
+    border-top: 4px solid #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Not found page */
+.not-found {
+    text-align: center;
+    padding: 4rem 2rem;
+}
+
+.not-found h2 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    color: #333;
+}
+
+.not-found p {
+    color: #666;
+    margin-bottom: 2rem;
+}
+
+.home-link {
+    color: #667eea;
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border: 1px solid #667eea;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.home-link:hover {
+    background-color: #667eea;
+    color: white;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .app-main {
+        padding: 1rem;
+    }
+    
+    .header-content {
+        padding: 0 1rem;
+    }
+    
+    .app-header h1 {
+        font-size: 2rem;
+    }
+    
+    .hero-section h2 {
+        font-size: 2rem;
+    }
+    
+    .features {
+        grid-template-columns: 1fr;
+    }
+    
+    .repos-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .example-repos {
+        grid-template-columns: 1fr;
+    }
+    
+    .repo-header {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .issue-header {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .issue-meta {
+        flex-wrap: wrap;
+    }
+    
+    .comment-header {
+        flex-wrap: wrap;
+    }
+}

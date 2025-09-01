@@ -34,6 +34,10 @@ Thumbs.db
 /coverage/
 *.profraw
 
+# Demo build artifacts
+demo/target/
+demo/dist/
+
 # Backup files
 *.bak
 *.backup
