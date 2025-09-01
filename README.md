@@ -93,6 +93,23 @@ fn App() -> impl IntoView {
 }
 ```
 
+## 🛠️ Development
+
+This project includes a comprehensive Makefile for common development tasks:
+
+```bash
+# Show all available commands
+make help
+
+# Common development workflow
+make dev          # Format, lint, and test
+make test         # Run all tests
+make doc          # Generate documentation
+make release      # Build release version
+```
+
+For a complete list of commands, run `make help`.
+
 ## 📚 Documentation
 
 - **[API Reference](./docs/api-reference.md)** - Complete API documentation

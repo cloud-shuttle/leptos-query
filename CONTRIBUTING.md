@@ -36,7 +36,27 @@ Thank you for your interest in contributing to Leptos Query! This document provi
 
 ## Development Setup
 
-### Install Dependencies
+### Quick Start with Makefile
+
+This project includes a comprehensive Makefile for common development tasks:
+
+```bash
+# Show all available commands
+make help
+
+# Set up development environment
+make setup
+
+# Common development workflow
+make dev          # Format, lint, and test
+make test         # Run all tests
+make doc          # Generate documentation
+make release      # Build release version
+```
+
+### Manual Setup
+
+#### Install Dependencies
 
 ```bash
 # Install wasm-pack for WebAssembly builds
@@ -44,9 +64,12 @@ cargo install wasm-pack
 
 # Install cargo-leptos for Leptos development
 cargo install cargo-leptos
+
+# Install development tools
+cargo install cargo-watch cargo-audit
 ```
 
-### Build the Project
+#### Build the Project
 
 ```bash
 # Build the library
@@ -59,7 +82,7 @@ cargo build --all-features
 wasm-pack build --target web
 ```
 
-### Run Tests
+#### Run Tests
 
 ```bash
 # Run all tests
