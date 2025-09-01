@@ -118,23 +118,13 @@ where
     // Create fetch function for initial fetch
     let initial_fetch = {
         let client = client.clone();
-        let key = key.clone();
         let query_fn = query_fn.clone();
         let options = options.clone();
-        let set_data = set_data.clone();
-        let set_error = set_error.clone();
-        let set_loading = set_loading.clone();
-        let set_status = set_status.clone();
         
         move |force: bool| {
             let client = client.clone();
-            let key = key.clone();
             let query_fn = query_fn.clone();
             let options = options.clone();
-            let set_data = set_data.clone();
-            let set_error = set_error.clone();
-            let set_loading = set_loading.clone();
-            let set_status = set_status.clone();
             
             spawn_local(async move {
                 let current_key = key.get();
@@ -156,7 +146,7 @@ where
                 set_status.set(QueryStatus::Loading);
                 
                 let result = execute_with_retry(
-                    || query_fn(),
+                    &query_fn,
                     &options.retry,
                 ).await;
                 
@@ -183,23 +173,13 @@ where
     // Create fetch function for refetch
     let refetch_fn = {
         let client = client.clone();
-        let key = key.clone();
         let query_fn = query_fn.clone();
         let options = options.clone();
-        let set_data = set_data.clone();
-        let set_error = set_error.clone();
-        let set_loading = set_loading.clone();
-        let set_status = set_status.clone();
         
         move |force: bool| {
             let client = client.clone();
-            let key = key.clone();
             let query_fn = query_fn.clone();
             let options = options.clone();
-            let set_data = set_data.clone();
-            let set_error = set_error.clone();
-            let set_loading = set_loading.clone();
-            let set_status = set_status.clone();
             
             spawn_local(async move {
                 let current_key = key.get();
@@ -221,7 +201,7 @@ where
                 set_status.set(QueryStatus::Loading);
                 
                 let result = execute_with_retry(
-                    || query_fn(),
+                    &query_fn,
                     &options.retry,
                 ).await;
                 

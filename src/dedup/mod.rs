@@ -11,10 +11,13 @@ use crate::client::SerializedData;
 use crate::types::QueryKey;
 use crate::retry::QueryError;
 
+// Type alias to reduce complexity
+type InFlightMap = Arc<RwLock<HashMap<QueryKey, oneshot::Sender<Result<SerializedData, QueryError>>>>>;
+
 /// Request deduplicator
 #[derive(Clone)]
 pub struct RequestDeduplicator {
-    in_flight: Arc<RwLock<HashMap<QueryKey, oneshot::Sender<Result<SerializedData, QueryError>>>>>,
+    in_flight: InFlightMap,
 }
 
 impl RequestDeduplicator {
@@ -36,25 +39,29 @@ impl RequestDeduplicator {
         F: FnOnce() -> Fut + Send + Sync + 'static,
         Fut: Future<Output = Result<T, QueryError>> + Send + Sync + 'static,
     {
-        // Check if there's already a request in flight
-        {
+        // Check if there's already a request in flight and get receiver if exists
+        let existing_receiver = {
             let in_flight = self.in_flight.read().unwrap();
             if let Some(_sender) = in_flight.get(&key) {
                 // Subscribe to existing request
                 let (_new_sender, receiver) = oneshot::channel::<Result<SerializedData, QueryError>>();
-                drop(in_flight); // Release lock early
-                
-                // Wait for the result
-                match receiver.await {
-                    Ok(result) => {
-                        return result.and_then(|data| {
-                            bincode::deserialize(&data.data)
-                                .map_err(|e| QueryError::SerializationError(e.to_string()))
-                        });
-                    }
-                    Err(_) => {
-                        // The original request failed, we'll start a new one
-                    }
+                Some(receiver)
+            } else {
+                None
+            }
+        }; // Lock is dropped here
+        
+        // If we have an existing receiver, wait for the result
+        if let Some(receiver) = existing_receiver {
+            match receiver.await {
+                Ok(result) => {
+                    return result.and_then(|data| {
+                        bincode::deserialize(&data.data)
+                            .map_err(|e| QueryError::SerializationError(e.to_string()))
+                    });
+                }
+                Err(_) => {
+                    // The original request failed, we'll start a new one
                 }
             }
         }

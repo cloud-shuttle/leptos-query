@@ -235,10 +235,10 @@ fn TestMutationComponent() -> impl IntoView {
         MutationOptions::default()
     );
     
-    let (user_name, set_user_name) = create_signal("".to_string());
-    let (user_email, set_user_email) = create_signal("".to_string());
-    let (post_title, set_post_title) = create_signal("".to_string());
-    let (post_content, set_post_content) = create_signal("".to_string());
+            let (user_name, set_user_name) = signal("".to_string());
+        let (user_email, set_user_email) = signal("".to_string());
+        let (post_title, set_post_title) = signal("".to_string());
+        let (post_content, set_post_content) = signal("".to_string());
     
     let handle_create_user = {
         let create_user_mutation = create_user_mutation.clone();
@@ -378,7 +378,7 @@ fn TestRetryComponent() -> impl IntoView {
 // Test component for cache functionality
 #[component]
 fn TestCacheComponent() -> impl IntoView {
-    let (user_id, set_user_id) = create_signal(1);
+            let (user_id, set_user_id) = signal(1);
     
     let user_query = use_query(
         move || {
@@ -394,7 +394,7 @@ fn TestCacheComponent() -> impl IntoView {
             .with_cache_time(Duration::from_secs(10))
     );
     
-    let (refetch_count, set_refetch_count) = create_signal(0);
+            let (refetch_count, set_refetch_count) = signal(0);
     
     let handle_refetch = {
         let user_query = user_query.clone();

@@ -96,17 +96,11 @@ where
         let client = client.clone();
         let mutation_fn = mutation_fn.clone();
         let options = options.clone();
-        let set_data = set_data.clone();
-        let set_error = set_error.clone();
-        let set_loading = set_loading.clone();
         
         move |vars: TVariables| {
             let _client = client.clone();
             let mutation_fn = mutation_fn.clone();
             let options = options.clone();
-            let set_data = set_data.clone();
-            let set_error = set_error.clone();
-            let set_loading = set_loading.clone();
             
             spawn_local(async move {
                 set_loading.set(true);

@@ -188,7 +188,10 @@ mod tests {
     
     #[test]
     fn test_cache_stats() {
-        let client = QueryClient::new();
+        let client = QueryClient::with_settings(
+            Duration::from_secs(60), // 1 minute stale time
+            Duration::from_secs(300) // 5 minutes cache time
+        );
         let key1 = QueryKey::from("test1");
         let key2 = QueryKey::from("test2");
         

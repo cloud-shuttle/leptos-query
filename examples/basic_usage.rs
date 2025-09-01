@@ -107,8 +107,8 @@ fn CreateUserForm() -> impl IntoView {
         MutationOptions::default()
     );
 
-    let (name, set_name) = create_signal(String::new());
-    let (email, set_email) = create_signal(String::new());
+            let (name, set_name) = signal(String::new());
+        let (email, set_email) = signal(String::new());
 
     let handle_submit = move |_| {
         let request = CreateUserRequest {

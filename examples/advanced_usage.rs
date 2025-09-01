@@ -1,7 +1,7 @@
 use leptos::prelude::*;
 use leptos::prelude::{ElementChild, OnAttribute, Get};
 use leptos_query_rs::*;
-use std::collections::HashMap;
+
 
 // Advanced example showing complex patterns
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
@@ -95,8 +95,8 @@ fn AdvancedUserProfile(user_id: u32) -> impl IntoView {
     );
 
     // Form state
-    let (title, set_title) = create_signal(String::new());
-    let (content, set_content) = create_signal(String::new());
+            let (title, set_title) = signal(String::new());
+        let (content, set_content) = signal(String::new());
 
     view! {
         <div class="user-profile">
