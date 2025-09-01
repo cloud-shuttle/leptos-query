@@ -1,4 +1,0 @@
-dyn for<'a, 'b, 'c> std::ops::Fn(&'a TData, &'b TVariables, &'c std::option::Option<TContext>)
-dyn for<'a, 'b, 'c> std::ops::Fn(&'a TData, &'b TVariables, &'c std::option::Option<TContext>): Clone
-Box<dyn for<'a, 'b, 'c> std::ops::Fn(&'a TData, &'b TVariables, &'c std::option::Option<TContext>)>
-std::option::Option<Box<dyn for<'a, 'b, 'c> std::ops::Fn(&'a TData, &'b TVariables, &'c std::option::Option<TContext>)>>

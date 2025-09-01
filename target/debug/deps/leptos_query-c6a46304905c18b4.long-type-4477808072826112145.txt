@@ -1,1 +1,0 @@
-Box<dyn for<'a> std::ops::Fn(&'a TVariables) -> std::option::Option<MutationContext<TData>> + Send + std::marker::Sync>

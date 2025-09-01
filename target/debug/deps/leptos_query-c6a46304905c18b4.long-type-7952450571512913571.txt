@@ -1,3 +1,0 @@
-dyn for<'a> std::ops::Fn(&'a QueryKey) -> bool + Send + std::marker::Sync
-dyn for<'a> std::ops::Fn(&'a QueryKey) -> bool + Send + std::marker::Sync: Clone
-Box<dyn for<'a> std::ops::Fn(&'a QueryKey) -> bool + Send + std::marker::Sync>

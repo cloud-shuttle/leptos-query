@@ -1,4 +1,0 @@
-dyn for<'a> std::ops::Fn(&'a TVariables) -> std::option::Option<TContext>
-dyn for<'a> std::ops::Fn(&'a TVariables) -> std::option::Option<TContext>: Clone
-Box<dyn for<'a> std::ops::Fn(&'a TVariables) -> std::option::Option<TContext>>
-std::option::Option<Box<dyn for<'a> std::ops::Fn(&'a TVariables) -> std::option::Option<TContext>>>

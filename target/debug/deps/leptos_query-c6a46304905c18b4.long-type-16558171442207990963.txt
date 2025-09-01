@@ -1,4 +1,0 @@
-dyn for<'a, 'b, 'c, 'd> std::ops::Fn(&'a std::option::Option<TData>, &'b std::option::Option<retry::QueryError>, &'c TVariables, &'d std::option::Option<TContext>) + Send + std::marker::Sync
-dyn for<'a, 'b, 'c, 'd> std::ops::Fn(&'a std::option::Option<TData>, &'b std::option::Option<retry::QueryError>, &'c TVariables, &'d std::option::Option<TContext>) + Send + std::marker::Sync: Clone
-Box<dyn for<'a, 'b, 'c, 'd> std::ops::Fn(&'a std::option::Option<TData>, &'b std::option::Option<retry::QueryError>, &'c TVariables, &'d std::option::Option<TContext>) + Send + std::marker::Sync>
-std::option::Option<Box<dyn for<'a, 'b, 'c, 'd> std::ops::Fn(&'a std::option::Option<TData>, &'b std::option::Option<retry::QueryError>, &'c TVariables, &'d std::option::Option<TContext>) + Send + std::marker::Sync>>
