@@ -51,6 +51,9 @@ pub use client::*;
 pub use query::*;
 pub use mutation::*;
 
+// Re-export compatibility layer
+pub use compat::*;
+
 // Modules
 pub mod compat;
 pub mod client;

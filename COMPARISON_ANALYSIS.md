@@ -13,7 +13,7 @@ Both libraries aim to provide React Query/TanStack Query-like functionality for 
 
 | Feature | gaucho-labs/leptos-query | cloud-shuttle/leptos-query-rs | Notes |
 |---------|-------------------------|-------------------------------|-------|
-| **Leptos Version Support** | 0.5.*, 0.6.* | 0.6.*, 0.8.* (future) | Our implementation has forward compatibility |
+| **Leptos Version Support** | 0.5.*, 0.6.* | 0.6.* (current), 0.8.* (planned) | Both support current versions, ours has planned 0.8 support |
 | **Core Query Hook** | `create_query()` + `use_query()` | `use_query()` | Different API patterns |
 | **Mutation Support** | ✅ Yes | ✅ Yes | Both implementations |
 | **Cache Management** | ✅ Yes | ✅ Yes | Both implementations |
@@ -61,7 +61,7 @@ let QueryResult { data, .. } = track_query().use_query(move|| id.clone());
 ### cloud-shuttle/leptos-query-rs Architecture
 
 **Strengths:**
-- **Future-Ready**: Leptos 0.8 compatibility layer
+- **Future-Ready**: Infrastructure prepared for Leptos 0.8 compatibility
 - **Comprehensive Documentation**: Extensive guides, examples, and API docs
 - **AI-Assisted Development**: Transparent development process
 - **Interactive Demo**: Rich demo showcasing all features
@@ -106,9 +106,9 @@ let user_query = use_query(
 ### cloud-shuttle/leptos-query-rs Advantages
 
 1. **Future Compatibility**
-   - Leptos 0.8 compatibility layer
+   - Infrastructure prepared for Leptos 0.8 compatibility
    - Forward-looking architecture
-   - Migration path for future Leptos versions
+   - Migration path planned for future Leptos versions
 
 2. **Comprehensive Documentation**
    - Extensive API documentation
@@ -157,7 +157,7 @@ let user_query = use_query(
 - ✅ Working with existing Leptos 0.5 or 0.6 applications
 
 ### Choose cloud-shuttle/leptos-query-rs when:
-- ✅ Planning for Leptos 0.8 migration
+- ✅ Infrastructure prepared for Leptos 0.8 migration
 - ✅ Wanting comprehensive documentation and examples
 - ✅ Valuing AI-assisted development transparency
 - ✅ Preferring direct hook patterns
@@ -195,7 +195,7 @@ Both `leptos-query` implementations are excellent choices for different use case
 
 The choice depends on your specific needs:
 - **Production apps**: Consider gaucho-labs for stability
-- **Future-proofing**: Consider cloud-shuttle for Leptos 0.8 readiness
+- **Future-proofing**: Consider cloud-shuttle for planned Leptos 0.8 support
 - **Learning**: Both offer excellent resources, but cloud-shuttle has more comprehensive docs
 - **TypeScript**: gaucho-labs has better TypeScript support
 

@@ -8,7 +8,7 @@
 
 A powerful, type-safe data fetching and caching library for [Leptos](https://github.com/leptos-rs/leptos) applications, inspired by React Query/TanStack Query.
 
-> **📦 Note**: This crate is named `leptos-query-rs` to distinguish it from the existing `leptos-query` crate on crates.io. Our implementation focuses on **Leptos 0.8 compatibility**, **comprehensive documentation**, and **AI-assisted development transparency**.
+> **📦 Note**: This crate is named `leptos-query-rs` to distinguish it from the existing `leptos-query` crate on crates.io. Our implementation focuses on **comprehensive documentation**, **AI-assisted development transparency**, and **future-ready architecture**.
 
 > **🤖 AI-Generated Code Notice**: This repository contains code that was primarily generated with the assistance of Large Language Models (LLMs). See [AI_GENERATED_DISCLAIMER.md](AI_GENERATED_DISCLAIMER.md) for full details about our AI-assisted development approach and quality assurance practices.
 
@@ -136,10 +136,15 @@ Leptos Query supports multiple Leptos versions through feature flags:
 ```toml
 # For Leptos 0.6 (current)
 [dependencies]
-leptos-query = { version = "0.1", features = ["leptos-0-6"] }
+leptos-query-rs = { version = "0.1", features = ["leptos-0-6"] }
+leptos = "0.6"
 
-# For Leptos 0.8 (future)
-leptos-query = { version = "0.1", features = ["leptos-0-8"] }
+# For Leptos 0.8 (planned)
+[dependencies]
+leptos-query-rs = { version = "0.1", features = ["leptos-0-8"] }
+leptos = "0.8"
+
+> **Note**: Leptos 0.8 support is planned for future releases. The library currently supports Leptos 0.6 with infrastructure prepared for future version compatibility.
 ```
 
 You can also detect the current Leptos version at runtime:

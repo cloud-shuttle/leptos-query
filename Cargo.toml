@@ -16,8 +16,9 @@ categories = ["web-programming", "caching", "asynchronous"]
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-# Core Leptos dependencies
-leptos = { version = "0.6.14", features = ["csr", "ssr"] }
+# Core Leptos dependencies - version controlled by features
+leptos = { version = "0.6.14", features = ["csr", "ssr"], optional = true }
+leptos-0-8 = { package = "leptos", version = "0.8.8", features = ["csr", "ssr"], optional = true }
 
 # Serialization
 serde = { version = "1.0", features = ["derive"] }
@@ -58,8 +59,8 @@ wasm-bindgen-test = "0.3"
 
 [features]
 default = ["leptos-0-6", "csr"]
-leptos-0-6 = []
-leptos-0-8 = []
+leptos-0-6 = ["leptos"]
+leptos-0-8 = ["dep:leptos-0-8"]
 csr = ["leptos/csr"]
 ssr = ["leptos/ssr", "tokio/rt-multi-thread"]
 hydrate = ["leptos/hydrate"]

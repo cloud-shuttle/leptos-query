@@ -61,6 +61,18 @@ impl LeptosCompat for LeptosVersion {
     }
 }
 
+// Re-export Leptos types based on version
+#[cfg(feature = "leptos-0-6")]
+pub use leptos::{component, IntoView, create_signal, create_effect, create_memo, provide_context, use_context, create_resource, Signal, ReadSignal, WriteSignal, Resource};
+
+#[cfg(feature = "leptos-0-8")]
+pub use leptos_0_8::{component, IntoView, create_signal, create_effect, create_memo, provide_context, use_context, create_resource, Signal, ReadSignal, WriteSignal, Resource};
+
+// Compatibility re-exports for common types
+pub mod signals;
+pub mod effects;
+pub mod components;
+
 #[cfg(test)]
 mod tests {
     use super::*;
