@@ -24,10 +24,12 @@ help:
 	@echo "  doc-open       Generate and open documentation"
 	@echo ""
 	@echo "Quality Checks:"
-	@echo "  fmt            Format code with rustfmt"
-	@echo "  fmt-check      Check code formatting"
-	@echo "  clippy         Run clippy linter"
-	@echo "  audit          Run cargo audit for security"
+@echo "  fmt            Format code with rustfmt"
+@echo "  fmt-check      Check code formatting"
+@echo "  clippy         Run clippy linter"
+@echo "  audit          Run cargo audit for security"
+@echo "  ci             Run basic CI checks"
+@echo "  ci-local       Run full CI checks locally"
 	@echo ""
 	@echo "Release Commands:"
 	@echo "  release        Build release version"
@@ -120,6 +122,10 @@ build-leptos-08:
 # CI/CD helpers
 ci: fmt-check clippy test audit
 	@echo "CI checks passed!"
+
+ci-local:
+	@echo "Running local CI checks..."
+	@./scripts/test-ci.sh
 
 # Development setup
 setup: install
