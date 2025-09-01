@@ -1,143 +1,50 @@
-//! # Leptos Query
-//!
-//! A powerful, type-safe data fetching and caching library for Leptos that provides:
-//! - Automatic background refetching
-//! - Request deduplication  
-//! - Optimistic updates
-//! - Intelligent caching strategies
-//! - Offline support
-//! - DevTools integration
-//!
+//! Leptos Query - A powerful data fetching and caching library for Leptos 0.8
+//! 
+//! This library provides React Query/TanStack Query-like functionality for Leptos applications,
+//! with full support for Leptos 0.8's modern reactive primitives.
+//! 
 //! ## Quick Start
-//!
+//! 
 //! ```rust
 //! use leptos::*;
 //! use leptos_query_rs::*;
 //! 
 //! #[component]
-//! fn App() -> impl IntoView {
-//!     provide_context(QueryClient::new(QueryClientConfig::default()));
-//!     
-//!     view! {
-//!         <UserProfile user_id=1 />
-//!     }
-//! }
-//! 
-//! #[component] 
 //! fn UserProfile(user_id: u32) -> impl IntoView {
-//!     let user = use_query(
-//!         move || ["users", user_id.to_string()],
-//!         move || async move {
-//!             // Your fetch logic here
-//!             fetch_user(user_id).await
-//!         },
+//!     let user_query = use_query(
+//!         move || &["users", &user_id.to_string()][..],
+//!         move || || async move { fetch_user(user_id).await },
 //!         QueryOptions::default()
 //!     );
-//!     
+//! 
 //!     view! {
 //!         <div>
-//!             {move || match (user.data.get(), user.is_loading.get()) {
-//!                 (Some(user_data), _) => view! { <div>{user_data.name}</div> }.into_view(),
-//!                 (None, true) => view! { <div>"Loading..."</div> }.into_view(),
-//!                 _ => view! { <div>"Error"</div> }.into_view(),
+//!             {move || match user_query.data.get() {
+//!                 Some(user) => view! { <h1>{user.name}</h1> }.into_view(),
+//!                 None => view! { <p>"Loading..."</p> }.into_view(),
 //!             }}
 //!         </div>
 //!     }
 //! }
 //! ```
 
-// Re-export core types
-pub use client::*;
-pub use query::*;
-pub use mutation::*;
-
-// Re-export compatibility layer
-pub use compat::*;
+// Re-export main modules
+pub use client::{QueryClient, QueryClientConfig};
+pub use query::{use_query, QueryResult};
+pub use mutation::{use_mutation, MutationResult};
+pub use retry::{QueryError, RetryConfig, RetryDelay};
 
 // Modules
-pub mod compat;
+pub mod api;
 pub mod client;
 pub mod query;
 pub mod mutation;
 pub mod retry;
 pub mod dedup;
+pub mod infinite_query;
+pub mod persistence;
+pub mod devtools;
+pub mod types;
 
-// Common types
-pub mod types {
-    use std::time::{Duration};
-    
-    /// Unique identifier for query observers
-    #[derive(Clone, Debug, Hash, PartialEq, Eq)]
-    pub struct QueryObserverId(pub uuid::Uuid);
-    
-    impl QueryObserverId {
-        pub fn new() -> Self {
-            Self(uuid::Uuid::new_v4())
-        }
-    }
-    
-    /// Unique identifier for mutations
-    #[derive(Clone, Debug, Hash, PartialEq, Eq)]
-    pub struct MutationId(pub uuid::Uuid);
-    
-    impl MutationId {
-        pub fn new() -> Self {
-            Self(uuid::Uuid::new_v4())
-        }
-    }
-    
-    /// Query status enum
-    #[derive(Clone, Debug, PartialEq)]
-    pub enum QueryStatus {
-        Idle,
-        Loading,
-        Success,
-        Error,
-    }
-    
-    /// Mutation status enum  
-    #[derive(Clone, Debug, PartialEq)]
-    pub enum MutationStatus {
-        Idle,
-        Loading,
-        Success,
-        Error,
-    }
-    
-    /// Query metadata for analytics and debugging
-    #[derive(Clone, Debug, Default)]
-    pub struct QueryMeta {
-        pub fetch_count: u32,
-        pub error_count: u32,
-        pub last_fetch_duration: Option<Duration>,
-        pub total_fetch_time: Duration,
-    }
-    
-    impl QueryMeta {
-        pub fn record_fetch(&mut self, duration: Duration) {
-            self.fetch_count += 1;
-            self.last_fetch_duration = Some(duration);
-            self.total_fetch_time += duration;
-        }
-        
-        pub fn record_error(&mut self) {
-            self.error_count += 1;
-        }
-        
-        pub fn average_fetch_time(&self) -> Option<Duration> {
-            if self.fetch_count > 0 {
-                Some(self.total_fetch_time / self.fetch_count)
-            } else {
-                None
-            }
-        }
-        
-        pub fn success_rate(&self) -> f64 {
-            if self.fetch_count == 0 {
-                0.0
-            } else {
-                (self.fetch_count - self.error_count) as f64 / self.fetch_count as f64
-            }
-        }
-    }
-}
+// Re-export common types
+pub use types::{QueryKey, QueryOptions, MutationOptions, QueryStatus, MutationStatus, QueryObserverId, MutationId, QueryMeta};

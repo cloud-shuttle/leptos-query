@@ -2,15 +2,15 @@
 //!
 //! The main user-facing API for data fetching with reactive queries.
 
-use leptos::*;
+use leptos::prelude::*;
 use std::rc::Rc;
 use std::time::{Duration, Instant};
 use std::future::Future;
 use serde::{Serialize, de::DeserializeOwned};
 
-use crate::client::{QueryClient, QueryKey, SerializedData};
+use crate::client::{QueryClient, SerializedData};
 use crate::retry::{QueryError, RetryConfig, execute_with_retry};
-use crate::types::{QueryObserverId, QueryStatus, QueryMeta};
+use crate::types::{QueryObserverId, QueryStatus, QueryMeta, QueryKey, QueryOptions as TypesQueryOptions};
 
 /// Options for configuring a query
 #[derive(Clone)]

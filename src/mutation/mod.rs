@@ -3,7 +3,7 @@
 //! Provides hooks for data mutations with automatic cache invalidation
 //! and optimistic update capabilities.
 
-use leptos::*;
+use leptos::prelude::*;
 use std::rc::Rc;
 use std::time::Instant;
 use std::future::Future;
