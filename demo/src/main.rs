@@ -1,5 +1,5 @@
 use leptos::*;
-use leptos_query::QueryClientProvider;
+use leptos_query_rs::QueryClientProvider;
 use console_error_panic_hook;
 use console_log;
 

@@ -8,6 +8,8 @@
 
 A powerful, type-safe data fetching and caching library for [Leptos](https://github.com/leptos-rs/leptos) applications, inspired by React Query/TanStack Query.
 
+> **📦 Note**: This crate is named `leptos-query-rs` to distinguish it from the existing `leptos-query` crate on crates.io. Our implementation focuses on **Leptos 0.8 compatibility**, **comprehensive documentation**, and **AI-assisted development transparency**.
+
 > **🤖 AI-Generated Code Notice**: This repository contains code that was primarily generated with the assistance of Large Language Models (LLMs). See [AI_GENERATED_DISCLAIMER.md](AI_GENERATED_DISCLAIMER.md) for full details about our AI-assisted development approach and quality assurance practices.
 
 ## ✨ Features
@@ -29,14 +31,14 @@ Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-leptos-query = "0.1.0"
+leptos-query-rs = "0.1.0"
 ```
 
 ### Basic Usage
 
 ```rust
 use leptos::*;
-use leptos_query::*;
+use leptos_query_rs::*;
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -152,7 +154,7 @@ println!("Using Leptos version: {}", version.as_str());
 ### QueryClient Setup
 
 ```rust
-use leptos_query::*;
+use leptos_query_rs::*;
 
 #[component]
 fn App() -> impl IntoView {

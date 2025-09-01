@@ -1,6 +1,6 @@
 use leptos::*;
-use leptos_query::*;
-use leptos_query::retry::QueryError;
+use leptos_query_rs::*;
+use leptos_query_rs::retry::QueryError;
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
 

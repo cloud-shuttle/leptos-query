@@ -1,7 +1,7 @@
 use leptos::*;
-use leptos_query::*;
-use leptos_query::retry::{QueryError, RetryConfig, RetryDelay};
-use leptos_query::types::{QueryStatus, MutationStatus};
+use leptos_query_rs::*;
+use leptos_query_rs::retry::{QueryError, RetryConfig, RetryDelay};
+use leptos_query_rs::types::{QueryStatus, MutationStatus};
 use serde::{Serialize, Deserialize};
 use std::time::Duration;
 

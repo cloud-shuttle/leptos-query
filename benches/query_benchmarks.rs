@@ -1,6 +1,6 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use leptos::*;
-use leptos_query::*;
+use leptos_query_rs::*;
 use std::time::Duration;
 
 // Benchmark data structures

@@ -358,7 +358,7 @@
                 <p>leptos-query is a powerful, type-safe data fetching and caching library for Leptos applications, inspired by React Query/TanStack Query. It provides automatic caching, background updates, error handling, and more.</p>
                 
                 <div class="code-example">
-                    <pre>use leptos_query::{use_query, QueryOptions, QueryKey};
+                    <pre>use leptos_query_rs::{use_query, QueryOptions, QueryKey};
 
 let user_query = use_query(
     move || QueryKey::new(["users", &user_id.get().to_string()]),

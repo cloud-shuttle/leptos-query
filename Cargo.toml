@@ -1,15 +1,15 @@
 [package]
-name = "leptos-query"
+name = "leptos-query-rs"
 version = "0.1.0"
 edition = "2021"
 authors = ["CloudShuttle Team"]
 description = "A powerful, type-safe data fetching and caching library for Leptos applications, inspired by React Query/TanStack Query"
 license = "MIT"
 repository = "https://github.com/CloudShuttle/leptos-query"
-documentation = "https://docs.rs/leptos-query"
+documentation = "https://docs.rs/leptos-query-rs"
 homepage = "https://github.com/CloudShuttle/leptos-query"
 readme = "README.md"
-keywords = ["leptos", "query", "cache", "data-fetching", "reactive", "web", "wasm"]
+keywords = ["leptos", "query", "cache", "data-fetching", "reactive", "web", "wasm", "rust"]
 categories = ["web-programming", "caching", "asynchronous"]
 
 [lib]

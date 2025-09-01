@@ -12,7 +12,7 @@
 //!
 //! ```rust
 //! use leptos::*;
-//! use leptos_query::*;
+//! use leptos_query_rs::*;
 //! 
 //! #[component]
 //! fn App() -> impl IntoView {

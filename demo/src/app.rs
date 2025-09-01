@@ -1,5 +1,5 @@
 use leptos::*;
-use leptos_query::{use_query, QueryOptions, QueryKey};
+use leptos_query_rs::{use_query, QueryOptions, QueryKey};
 use std::time::Duration;
 
 use serde::{Serialize, Deserialize};
@@ -11,7 +11,7 @@ struct User {
     email: String,
 }
 
-use leptos_query::retry::QueryError;
+use leptos_query_rs::retry::QueryError;
 
 // Simulated API function
 async fn fetch_user(id: u32) -> Result<User, QueryError> {

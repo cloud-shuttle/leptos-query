@@ -1,5 +1,5 @@
 use leptos::*;
-use leptos_query::*;
+use leptos_query_rs::*;
 use std::collections::HashMap;
 
 // Advanced example showing complex patterns
