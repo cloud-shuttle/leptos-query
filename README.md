@@ -8,6 +8,8 @@
 
 A powerful, type-safe data fetching and caching library for [Leptos](https://github.com/leptos-rs/leptos) applications, inspired by React Query/TanStack Query.
 
+> **🤖 AI-Generated Code Notice**: This repository contains code that was primarily generated with the assistance of Large Language Models (LLMs). See [AI_GENERATED_DISCLAIMER.md](AI_GENERATED_DISCLAIMER.md) for full details about our AI-assisted development approach and quality assurance practices.
+
 ## ✨ Features
 
 - **🔄 Automatic Caching**: Intelligent cache management with configurable stale times
@@ -300,6 +302,19 @@ match error {
     }
 }
 ```
+
+## 🎮 Interactive Demo
+
+Try our **[interactive demo](demo/static-demo.html)** to see leptos-query in action! The demo showcases:
+
+- 🔄 **Automatic Caching** - Watch data get cached and shared across components
+- 🛡️ **Error Handling** - Test error scenarios with auto-retry logic
+- 🔄 **Mutations** - Update data with optimistic UI updates
+- 📄 **Infinite Queries** - Load paginated data with infinite scrolling
+- ⚡ **Background Refetch** - Keep data fresh automatically
+- 📊 **Real-time Status** - Monitor cache, loading, and error states
+
+The demo is fully interactive and runs in your browser - no installation required!
 
 ## 🚀 Advanced Features
 
