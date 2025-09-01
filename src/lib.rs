@@ -1,50 +1,85 @@
-//! Leptos Query - A powerful data fetching and caching library for Leptos 0.8
-//! 
-//! This library provides React Query/TanStack Query-like functionality for Leptos applications,
-//! with full support for Leptos 0.8's modern reactive primitives.
-//! 
+//! Leptos Query - A React Query inspired data fetching library for Leptos
+//!
+//! This library provides a powerful and flexible way to manage server state
+//! in Leptos applications, with features like caching, background updates,
+//! optimistic updates, and more.
+//!
+//! ## Features
+//!
+//! - **Declarative Data Fetching**: Write queries as simple functions
+//! - **Automatic Caching**: Built-in cache with configurable stale times
+//! - **Background Updates**: Keep data fresh with background refetching
+//! - **Optimistic Updates**: Update UI immediately with rollback on error
+//! - **Error Handling**: Comprehensive error handling with retry logic
+//! - **Type Safety**: Full type safety with Rust's type system
+//! - **WASM Compatible**: Works in both native and web environments
+//!
 //! ## Quick Start
-//! 
+//!
 //! ```rust
 //! use leptos::*;
-//! use leptos_query_rs::*;
-//! 
+//! use leptos_query::*;
+//! use serde::{Deserialize, Serialize};
+//!
+//! #[derive(Clone, Debug, Serialize, Deserialize)]
+//! struct User {
+//!     id: u32,
+//!     name: String,
+//!     email: String,
+//! }
+//!
+//! async fn fetch_user(id: u32) -> Result<User, QueryError> {
+//!     // Your async function here
+//!     Ok(User {
+//!         id,
+//!         name: "John Doe".to_string(),
+//!         email: "john@example.com".to_string(),
+//!     })
+//! }
+//!
 //! #[component]
 //! fn UserProfile(user_id: u32) -> impl IntoView {
 //!     let user_query = use_query(
-//!         move || &["users", &user_id.to_string()][..],
-//!         move || || async move { fetch_user(user_id).await },
-//!         QueryOptions::default()
+//!         move || QueryKey::from(["user", user_id.to_string()]),
+//!         move || fetch_user(user_id),
+//!         QueryOptions::default(),
 //!     );
-//! 
+//!
 //!     view! {
 //!         <div>
 //!             {move || match user_query.data.get() {
-//!                 Some(user) => view! { <h1>{user.name}</h1> }.into_view(),
-//!                 None => view! { <p>"Loading..."</p> }.into_view(),
+//!                 Some(user) => view! { <div>"User: " {user.name}</div> },
+//!                 None if user_query.is_loading.get() => view! { <div>"Loading..."</div> },
+//!                 None => view! { <div>"No user found"</div> },
 //!             }}
 //!         </div>
 //!     }
 //! }
 //! ```
 
-// Re-export main modules
-pub use client::{QueryClient, QueryClientConfig};
-pub use query::{use_query, QueryResult};
-pub use mutation::{use_mutation, MutationResult};
-pub use retry::{QueryError, RetryConfig, RetryDelay};
+use leptos::prelude::*;
 
-// Modules
-pub mod api;
 pub mod client;
 pub mod query;
 pub mod mutation;
 pub mod retry;
-pub mod dedup;
-pub mod infinite_query;
-pub mod persistence;
-pub mod devtools;
 pub mod types;
+pub mod dedup;
 
-// Re-export common types
-pub use types::{QueryKey, QueryOptions, MutationOptions, QueryStatus, MutationStatus, QueryObserverId, MutationId, QueryMeta};
+// Re-export main types and functions
+pub use client::QueryClient;
+pub use query::{use_query, QueryOptions, QueryResult};
+pub use mutation::{use_mutation, MutationOptions, MutationResult};
+pub use retry::{QueryError, RetryConfig, execute_with_retry};
+pub use types::{QueryKey, QueryStatus, QueryMeta, QueryKeyPattern};
+
+/// Provide the QueryClient context to the app
+#[component]
+pub fn QueryClientProvider(
+    children: Children,
+) -> impl IntoView {
+    let client = QueryClient::new();
+    provide_context(client);
+    
+    children()
+}
