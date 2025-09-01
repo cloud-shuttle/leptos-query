@@ -1,0 +1,23 @@
+name: Update Badges
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types:
+      - completed
+
+jobs:
+  update-badges:
+    name: Update Badges
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Update README badges
+        run: |
+          # This is a placeholder for badge updates
+          # In a real implementation, you might want to use a tool like shields.io
+          # or create custom badges based on workflow results
+          echo "Badges would be updated here based on CI results"

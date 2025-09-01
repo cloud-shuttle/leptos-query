@@ -1,5 +1,11 @@
 # Leptos Query
 
+[![CI](https://github.com/cloud-shuttle/leptos-query/workflows/CI/badge.svg)](https://github.com/cloud-shuttle/leptos-query/actions?query=workflow%3ACI)
+[![Crates.io](https://img.shields.io/crates/v/leptos-query)](https://crates.io/crates/leptos-query)
+[![Documentation](https://img.shields.io/badge/docs-latest-blue.svg)](https://docs.rs/leptos-query)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Rust](https://img.shields.io/badge/rust-1.70+-blue.svg)](https://www.rust-lang.org)
+
 A powerful, type-safe data fetching and caching library for [Leptos](https://github.com/leptos-rs/leptos) applications, inspired by React Query/TanStack Query.
 
 ## ✨ Features
