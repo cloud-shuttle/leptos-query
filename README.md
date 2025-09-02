@@ -22,7 +22,7 @@ Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-leptos-query = "0.3.0"
+leptos-query = "0.4.0"
 leptos = "0.8"
 serde = { version = "1.0", features = ["derive"] }
 ```
