@@ -1,21 +1,39 @@
 //! Core types and data structures for the query system
 
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::{Duration, Instant};
 use serde::{Serialize, Deserialize};
+use std::fmt;
 
 /// Query status enum
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum QueryStatus {
+    /// Query is idle (not running)
     Idle,
+    /// Query is currently loading
     Loading,
+    /// Query completed successfully
     Success,
+    /// Query failed with an error
     Error,
+}
+
+impl Default for QueryStatus {
+    fn default() -> Self {
+        Self::Idle
+    }
 }
 
 /// Query key for identifying queries in the cache
 #[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize)]
 pub struct QueryKey {
     pub segments: Vec<String>,
+}
+
+impl fmt::Display for QueryKey {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.segments.join(":"))
+    }
 }
 
 impl QueryKey {
@@ -26,24 +44,44 @@ impl QueryKey {
         }
     }
     
-    /// Create a key with automatic serialization
-    pub fn from_parts<T: Serialize>(parts: &[T]) -> Result<Self, serde_json::Error> {
-        let segments = parts
-            .iter()
-            .map(|part| serde_json::to_string(part))
-            .collect::<Result<Vec<_>, _>>()?;
-        Ok(Self { segments })
+    /// Create a query key from a single string
+    pub fn from_string(s: impl Into<String>) -> Self {
+        Self {
+            segments: vec![s.into()],
+        }
     }
     
-    /// Pattern matching for cache invalidation
+    /// Add a segment to the key
+    pub fn with_segment(mut self, segment: impl Into<String>) -> Self {
+        self.segments.push(segment.into());
+        self
+    }
+    
+    /// Get the segments as a slice
+    pub fn segments(&self) -> &[String] {
+        &self.segments
+    }
+    
+    /// Check if the key is empty
+    pub fn is_empty(&self) -> bool {
+        self.segments.is_empty()
+    }
+    
+    /// Get the number of segments
+    pub fn len(&self) -> usize {
+        self.segments.len()
+    }
+    
+    /// Check if this key matches a pattern
     pub fn matches_pattern(&self, pattern: &QueryKeyPattern) -> bool {
         match pattern {
             QueryKeyPattern::Exact(key) => self == key,
             QueryKeyPattern::Prefix(prefix) => {
-                self.segments.starts_with(&prefix.segments)
+                self.segments.len() >= prefix.segments.len() &&
+                self.segments[..prefix.segments.len()] == prefix.segments
             }
-            QueryKeyPattern::Contains(segment) => {
-                self.segments.contains(segment)
+            QueryKeyPattern::Contains(substring) => {
+                self.segments.iter().any(|segment| segment.contains(substring))
             }
         }
     }
@@ -77,20 +115,48 @@ impl<T: ToString + std::fmt::Display> From<(T,)> for QueryKey {
     }
 }
 
-/// Pattern for matching query keys during invalidation
-#[derive(Clone)]
+/// Patterns for matching query keys
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum QueryKeyPattern {
+    /// Exact match
     Exact(QueryKey),
+    /// Prefix match (key starts with this pattern)
     Prefix(QueryKey),
+    /// Contains substring match
     Contains(String),
 }
 
+/// Observer ID for tracking query observers
+#[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize)]
+pub struct QueryObserverId {
+    pub id: u64,
+}
+
+impl QueryObserverId {
+    /// Create a new observer ID
+    pub fn new() -> Self {
+        static COUNTER: AtomicU64 = AtomicU64::new(0);
+        Self {
+            id: COUNTER.fetch_add(1, Ordering::Relaxed),
+        }
+    }
+}
+
+impl Default for QueryObserverId {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 /// Metadata about a query
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct QueryMeta {
     pub status: QueryStatus,
+    #[serde(with = "instant_serde")]
     pub updated_at: Instant,
+    #[serde(with = "duration_serde")]
     pub stale_time: Duration,
+    #[serde(with = "duration_serde")]
     pub cache_time: Duration,
 }
 
@@ -116,6 +182,54 @@ impl Default for QueryMeta {
             stale_time: Duration::from_secs(0),
             cache_time: Duration::from_secs(5 * 60), // 5 minutes
         }
+    }
+}
+
+/// Serialization helpers for Instant
+mod instant_serde {
+    use serde::{Deserialize, Deserializer, Serialize, Serializer};
+    use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
+
+    pub fn serialize<S>(instant: &Instant, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        // Convert Instant to SystemTime for serialization
+        let system_time = SystemTime::now() - instant.elapsed();
+        let duration = system_time.duration_since(UNIX_EPOCH).unwrap_or(Duration::ZERO);
+        duration.serialize(serializer)
+    }
+
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<Instant, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let duration = Duration::deserialize(deserializer)?;
+        let system_time = UNIX_EPOCH + duration;
+        let now = SystemTime::now();
+        let elapsed = now.duration_since(system_time).unwrap_or(Duration::ZERO);
+        Ok(Instant::now() - elapsed)
+    }
+}
+
+/// Serialization helpers for Duration
+mod duration_serde {
+    use serde::{Deserialize, Deserializer, Serialize, Serializer};
+    use std::time::Duration;
+
+    pub fn serialize<S>(duration: &Duration, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        duration.as_secs().serialize(serializer)
+    }
+
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<Duration, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let secs = u64::deserialize(deserializer)?;
+        Ok(Duration::from_secs(secs))
     }
 }
 

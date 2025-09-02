@@ -65,13 +65,21 @@ pub mod mutation;
 pub mod retry;
 pub mod types;
 pub mod dedup;
+pub mod infinite;
+pub mod persistence;
+pub mod optimistic;
+pub mod devtools;
 
 // Re-export main types and functions
 pub use client::QueryClient;
 pub use query::{use_query, QueryOptions, QueryResult};
 pub use mutation::{use_mutation, MutationOptions, MutationResult};
 pub use retry::{QueryError, RetryConfig, execute_with_retry};
-pub use types::{QueryKey, QueryStatus, QueryMeta, QueryKeyPattern};
+pub use types::{QueryKey, QueryStatus, QueryMeta, QueryKeyPattern, QueryObserverId};
+pub use infinite::{use_infinite_query, InfiniteQueryOptions, InfiniteQueryResult, Page, PageInfo};
+pub use persistence::{PersistenceManager, PersistenceConfig, StorageBackend};
+pub use optimistic::{OptimisticManager, OptimisticConfig, OptimisticUpdate, OptimisticStats};
+pub use devtools::{DevToolsManager, DevToolsConfig, DevToolsServer, QueryMetrics, NetworkRequest, CacheOperation, DevToolsEvent, DevToolsExport};
 
 /// Provide the QueryClient context to the app
 #[component]

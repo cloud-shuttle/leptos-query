@@ -1,149 +1,194 @@
-# leptos-query Makefile
-# Common development tasks for the leptos-query library
+# Leptos Query - Development Makefile
+# Supports both Nix and regular environments
 
-.PHONY: help build test check clean doc release install publish
+.PHONY: help install build test bench clean docs demo e2e wasm dev check format lint audit
 
 # Default target
 help:
-	@echo "leptos-query Development Commands:"
+	@echo "🚀 Leptos Query Development Commands"
 	@echo ""
-	@echo "Build Commands:"
-	@echo "  build          Build the library in release mode"
-	@echo "  build-dev      Build the library in debug mode"
-	@echo "  check          Check code without building"
-	@echo "  clean          Clean build artifacts"
+	@echo "📦 Setup & Installation:"
+	@echo "  install     - Install dependencies (pnpm + Rust)"
+	@echo "  nix-shell   - Enter Nix development shell"
 	@echo ""
-	@echo "Testing Commands:"
-	@echo "  test           Run all tests"
-	@echo "  test-lib       Run library tests only"
-	@echo "  test-integration Run integration tests only"
-	@echo "  test-examples  Test all examples"
+	@echo "🔨 Build & Development:"
+	@echo "  build       - Build the library"
+	@echo "  dev         - Start development server"
+	@echo "  demo        - Build demo application"
+	@echo "  wasm        - Build WASM package"
 	@echo ""
-	@echo "Documentation:"
-	@echo "  doc            Generate documentation"
-	@echo "  doc-open       Generate and open documentation"
+	@echo "🧪 Testing & Quality:"
+	@echo "  test        - Run Rust tests"
+	@echo "  e2e         - Run Playwright E2E tests"
+	@echo "  bench       - Run benchmarks"
+	@echo "  check       - Run all checks (test + bench + e2e)"
+	@echo "  format      - Format code with rustfmt"
+	@echo "  lint        - Run clippy linting"
+	@echo "  audit       - Security audit"
 	@echo ""
-	@echo "Quality Checks:"
-@echo "  fmt            Format code with rustfmt"
-@echo "  fmt-check      Check code formatting"
-@echo "  clippy         Run clippy linter"
-@echo "  audit          Run cargo audit for security"
-@echo "  ci             Run basic CI checks"
-@echo "  ci-local       Run full CI checks locally"
+	@echo "📚 Documentation:"
+	@echo "  docs        - Build documentation"
+	@echo "  docs-serve  - Serve documentation locally"
 	@echo ""
-	@echo "Release Commands:"
-	@echo "  release        Build release version"
-	@echo "  package        Create package for distribution"
-	@echo "  publish        Publish to crates.io (requires login)"
-	@echo ""
-	@echo "Development:"
-	@echo "  install        Install dependencies"
-	@echo "  watch          Watch for changes and run tests"
-	@echo "  example-basic  Run the basic usage example"
+	@echo "🧹 Maintenance:"
+	@echo "  clean       - Clean build artifacts"
+	@echo "  distclean   - Deep clean (including node_modules)"
+
+# Check if we're in a Nix environment
+NIX_ENV := $(shell if command -v nix >/dev/null 2>&1 && nix flake show >/dev/null 2>&1; then echo "yes"; else echo "no"; fi)
+
+# Setup and installation
+install:
+	@echo "📦 Installing dependencies..."
+	@if [ "$(NIX_ENV)" = "yes" ]; then \
+		echo "🔧 Using Nix environment..."; \
+		nix develop --command echo "Nix environment ready"; \
+	else \
+		echo "🔧 Installing Rust toolchain..."; \
+		rustup default stable; \
+		rustup target add wasm32-unknown-unknown; \
+		echo "🔧 Installing Trunk..."; \
+		cargo install trunk; \
+		echo "🔧 Installing wasm-pack..."; \
+		cargo install wasm-pack; \
+		echo "🔧 Installing pnpm..."; \
+		if ! command -v pnpm >/dev/null 2>&1; then \
+			npm install -g pnpm; \
+		fi; \
+		echo "🔧 Installing Playwright..."; \
+		cd demo && pnpm install && pnpm exec playwright install; \
+	fi
+
+nix-shell:
+	@if [ "$(NIX_ENV)" = "yes" ]; then \
+		echo "🔧 Entering Nix development shell..."; \
+		nix develop; \
+	else \
+		echo "❌ Nix flake not available. Run 'make install' instead."; \
+		exit 1; \
+	fi
 
 # Build commands
 build:
-	cargo build --release
+	@echo "🔨 Building library..."
+	cargo build --all-features --release
 
-build-dev:
-	cargo build
+demo:
+	@echo "🎨 Building demo application..."
+	cd demo && trunk build
 
-check:
-	cargo check --all-features
-
-clean:
-	cargo clean
-	rm -rf target/
+wasm:
+	@echo "🌐 Building WASM package..."
+	wasm-pack build --target web --out-dir dist
 
 # Testing commands
 test:
-	cargo test --all-features
+	@echo "🧪 Running Rust tests..."
+	cargo test --all-features --release
 
-test-lib:
-	cargo test --lib
+e2e:
+	@echo "🌐 Running Playwright E2E tests..."
+	@if [ -d "demo" ]; then \
+		cd demo && pnpm test:e2e; \
+	else \
+		echo "❌ Demo directory not found. Run 'make demo' first."; \
+		exit 1; \
+	fi
 
-test-integration:
-	cargo test --test integration_tests
+bench:
+	@echo "📊 Running benchmarks..."
+	cargo bench --all-features
 
-test-examples:
-	cargo test --examples
+check: test bench e2e
+	@echo "✅ All checks passed!"
 
-# Documentation
-doc:
-	cargo doc --all-features --no-deps
+# Code quality commands
+format:
+	@echo "🎨 Formatting code..."
+	cargo fmt --all
 
-doc-open:
-	cargo doc --all-features --no-deps --open
-
-# Quality checks
-fmt:
-	cargo fmt
-
-fmt-check:
-	cargo fmt -- --check
-
-clippy:
+lint:
+	@echo "🔍 Running clippy..."
 	cargo clippy --all-features -- -D warnings
 
 audit:
+	@echo "🔒 Security audit..."
 	cargo audit
 
+# Documentation commands
+docs:
+	@echo "📚 Building documentation..."
+	cargo doc --all-features --no-deps --open
+
+docs-serve:
+	@echo "📚 Serving documentation..."
+	cargo doc --all-features --no-deps
+	@echo "📖 Documentation available at: file://$(PWD)/target/doc/leptos_query_rs/index.html"
+
+# Development server
+dev:
+	@echo "🚀 Starting development server..."
+	cd demo && trunk serve
+
+# Cleanup commands
+clean:
+	@echo "🧹 Cleaning build artifacts..."
+	cargo clean
+	@if [ -d "demo" ]; then \
+		cd demo && rm -rf dist target; \
+	fi
+	rm -rf dist target
+
+distclean: clean
+	@echo "🧹 Deep cleaning..."
+	@if [ -d "demo" ]; then \
+		cd demo && rm -rf node_modules pnpm-lock.yaml; \
+	fi
+	rm -rf .cargo .rustup
+
+# CI/CD commands
+ci: format lint test bench e2e audit
+	@echo "✅ CI pipeline completed successfully!"
+
 # Release commands
-release: clean build test clippy audit
-	@echo "Release build completed successfully!"
+release-check: format lint test bench e2e audit
+	@echo "✅ Release checks passed!"
+	@echo "🚀 Ready for release!"
 
-package:
-	cargo package --list
+# Nix-specific commands
+nix-build:
+	@if [ "$(NIX_ENV)" = "yes" ]; then \
+		echo "🔧 Building with Nix..."; \
+		nix build .; \
+	else \
+		echo "❌ Nix flake not available."; \
+		exit 1; \
+	fi
 
-publish: release
-	cargo publish
+nix-test:
+	@if [ "$(NIX_ENV)" = "yes" ]; then \
+		echo "🔧 Testing with Nix..."; \
+		nix run .#test; \
+	else \
+		echo "❌ Nix flake not available."; \
+		exit 1; \
+	fi
 
-# Development commands
-install:
-	cargo install cargo-watch
-	cargo install cargo-audit
-
-watch:
-	cargo watch -x check -x test -x clippy
-
-example-basic:
-	cargo run --example basic_usage
-
-# Feature-specific builds
-build-csr:
-	cargo build --features csr
-
-build-ssr:
-	cargo build --features ssr
-
-build-leptos-08:
-	cargo build --features leptos-0-8
-
-# CI/CD helpers
-ci: fmt-check clippy test audit
-	@echo "CI checks passed!"
-
-ci-local:
-	@echo "Running local CI checks..."
-	@./scripts/test-ci.sh
-
-# Development setup
-setup: install
-	@echo "Development environment setup complete!"
-	@echo "Run 'make help' to see available commands"
+# Development workflow
+dev-setup: install build demo
+	@echo "🚀 Development environment ready!"
+	@echo "Run 'make dev' to start the development server"
 
 # Quick development cycle
-dev: fmt clippy test
-	@echo "Development cycle complete!"
+dev-cycle: format lint test
+	@echo "🔄 Development cycle completed!"
 
-# Clean everything including git
-clean-all: clean
-	git clean -fdx
-
-# Show project info
-info:
-	@echo "leptos-query Project Information:"
-	@echo "Version: $(shell grep '^version =' Cargo.toml | cut -d'"' -f2)"
-	@echo "Rust Edition: $(shell grep '^edition =' Cargo.toml | cut -d'"' -f2)"
-	@echo "License: $(shell grep '^license =' Cargo.toml | cut -d'"' -f2)"
-	@echo "Repository: $(shell grep '^repository =' Cargo.toml | cut -d'"' -f2)"
+# Show environment info
+env-info:
+	@echo "🔍 Environment Information:"
+	@echo "  Rust: $(shell rustc --version 2>/dev/null || echo 'Not installed')"
+	@echo "  Cargo: $(shell cargo --version 2>/dev/null || echo 'Not installed')"
+	@echo "  Node: $(shell node --version 2>/dev/null || echo 'Not installed')"
+	@echo "  pnpm: $(shell pnpm --version 2>/dev/null || echo 'Not installed')"
+	@echo "  Trunk: $(shell trunk --version 2>/dev/null || echo 'Not installed')"
+	@echo "  Nix: $(shell if [ "$(NIX_ENV)" = "yes" ]; then echo "Available"; else echo "Not available"; fi)"

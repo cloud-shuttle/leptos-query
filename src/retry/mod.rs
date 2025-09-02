@@ -15,6 +15,8 @@ pub enum QueryError {
     DeserializationError(String),
     /// Timeout errors
     TimeoutError(String),
+    /// Storage errors for persistence
+    StorageError(String),
     /// Generic error with message
     GenericError(String),
 }
@@ -26,6 +28,7 @@ impl std::fmt::Display for QueryError {
             QueryError::SerializationError(msg) => write!(f, "Serialization error: {}", msg),
             QueryError::DeserializationError(msg) => write!(f, "Deserialization error: {}", msg),
             QueryError::TimeoutError(msg) => write!(f, "Timeout error: {}", msg),
+            QueryError::StorageError(msg) => write!(f, "Storage error: {}", msg),
             QueryError::GenericError(msg) => write!(f, "Error: {}", msg),
         }
     }
@@ -146,6 +149,7 @@ pub fn should_retry_error(error: &QueryError, config: &RetryConfig) -> bool {
         QueryError::TimeoutError(_) => config.retry_on_timeout_errors,
         QueryError::SerializationError(_) | QueryError::DeserializationError(_) => false,
         QueryError::GenericError(_) => true,
+        QueryError::StorageError(_) => false, // Storage errors shouldn't be retried
     }
 }
 

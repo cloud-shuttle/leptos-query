@@ -1,0 +1,36 @@
+{
+  "name": "leptos-query-demo",
+  "version": "1.0.0",
+  "description": "A live demonstration of `leptos-query` showcasing real-world data fetching patterns, caching, and state management in a Leptos application.",
+  "main": "index.js",
+  "scripts": {
+    "dev": "trunk serve",
+    "build": "trunk build",
+    "test": "playwright test",
+    "test:e2e": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug",
+    "test:report": "playwright show-report",
+    "test:install": "playwright install",
+    "test:codegen": "playwright codegen",
+    "lint": "echo 'No linting configured'",
+    "format": "echo 'No formatting configured'",
+    "clean": "rm -rf dist target node_modules pnpm-lock.yaml"
+  },
+  "keywords": [
+    "leptos",
+    "query",
+    "caching",
+    "data-fetching",
+    "wasm",
+    "rust",
+    "demo"
+  ],
+  "author": "Leptos Query Team",
+  "license": "MIT",
+  "packageManager": "pnpm@10.15.0",
+  "devDependencies": {
+    "@playwright/test": "^1.55.0"
+  }
+}

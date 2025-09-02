@@ -2,23 +2,26 @@
 //!
 //! The main client for managing query state, caching, and background updates.
 
-use std::collections::HashMap;
-use std::sync::{Arc, RwLock};
-use std::time::{Duration, Instant};
-use serde::{Serialize, de::DeserializeOwned};
-
-use crate::types::{QueryKey, QueryStatus, QueryMeta};
+use crate::types::{QueryKey, QueryMeta, QueryStatus, QueryObserverId, QueryKeyPattern};
 use crate::retry::QueryError;
+use crate::infinite::{InfiniteQueryOptions, Page};
+use serde::{Deserialize, Serialize};
+use serde::de::DeserializeOwned;
+use std::collections::HashMap;
+use std::sync::Arc;
+use std::time::{Duration, Instant};
+use parking_lot::RwLock;
 
 /// Serialized data for caching
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct SerializedData {
     pub data: Vec<u8>,
+    #[serde(with = "instant_serde")]
     pub timestamp: Instant,
 }
 
 /// Cache entry for a query
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct CacheEntry {
     pub data: SerializedData,
     pub meta: QueryMeta,
@@ -66,7 +69,7 @@ impl QueryClient {
     
     /// Get a cache entry for a query key
     pub fn get_cache_entry(&self, key: &QueryKey) -> Option<CacheEntry> {
-        let cache = self.cache.read().ok()?;
+        let cache = self.cache.read();
         cache.get(key).cloned()
     }
     
@@ -92,49 +95,81 @@ impl QueryClient {
             },
         };
         
-        if let Ok(mut cache) = self.cache.write() {
-            cache.insert(key.clone(), entry);
-        }
+        let mut cache = self.cache.write();
+        cache.insert(key.clone(), entry);
         
         Ok(())
     }
     
     /// Remove a query from the cache
     pub fn remove_query(&self, key: &QueryKey) {
-        if let Ok(mut cache) = self.cache.write() {
-            cache.remove(key);
-        }
+        let mut cache = self.cache.write();
+        cache.remove(key);
     }
     
     /// Clear all queries from the cache
     pub fn clear_cache(&self) {
-        if let Ok(mut cache) = self.cache.write() {
-            cache.clear();
-        }
+        let mut cache = self.cache.write();
+        cache.clear();
     }
     
     /// Get cache statistics
     pub fn cache_stats(&self) -> CacheStats {
-        if let Ok(cache) = self.cache.read() {
-            CacheStats {
-                total_entries: cache.len(),
-                stale_entries: cache.values()
-                    .filter(|entry| entry.is_stale())
-                    .count(),
-            }
-        } else {
-            CacheStats {
-                total_entries: 0,
-                stale_entries: 0,
-            }
+        let cache = self.cache.read();
+        CacheStats {
+            total_entries: cache.len(),
+            stale_entries: cache.values().filter(|entry| entry.is_stale()).count(),
+            total_size: cache.values().map(|entry| entry.data.data.len()).sum(),
+        }
+    }
+
+    /// Get all cache entries (for DevTools)
+    pub fn get_cache_entries(&self) -> Vec<(QueryKey, CacheEntry)> {
+        let cache = self.cache.read();
+        cache.iter().map(|(key, entry)| (key.clone(), entry.clone())).collect()
+    }
+
+    /// Invalidate queries matching a pattern
+    pub fn invalidate_queries(&self, pattern: &QueryKeyPattern) {
+        let mut cache = self.cache.write();
+        let keys_to_remove: Vec<QueryKey> = cache
+            .keys()
+            .filter(|key| key.matches_pattern(pattern))
+            .cloned()
+            .collect();
+        
+        for key in keys_to_remove {
+            cache.remove(&key);
         }
     }
     
     /// Clean up stale entries
     pub fn cleanup_stale_entries(&self) {
-        if let Ok(mut cache) = self.cache.write() {
-            cache.retain(|_, entry| !entry.is_stale());
-        }
+        let mut cache = self.cache.write();
+        cache.retain(|_, entry| !entry.is_stale());
+    }
+
+    /// Infinite query support methods
+    /// Fetch a specific page for infinite queries
+    pub async fn fetch_infinite_page<T: Clone + Serialize + DeserializeOwned>(
+        &self,
+        _key: &QueryKey,
+        _page: usize,
+    ) -> Result<Page<T>, QueryError> {
+        // For now, this is a placeholder that would integrate with the actual query system
+        // In a full implementation, this would trigger the query function and return the page
+        todo!("Infinite page fetching not yet implemented")
+    }
+
+    /// Get infinite query options for a key
+    pub fn get_infinite_options(&self, _key: &QueryKey) -> InfiniteQueryOptions {
+        InfiniteQueryOptions::default()
+    }
+
+    /// Register an infinite query observer
+    pub fn register_infinite_observer(&self, _key: &QueryKey) -> QueryObserverId {
+        // Generate a unique observer ID
+        QueryObserverId::new()
     }
 }
 
@@ -143,6 +178,7 @@ impl QueryClient {
 pub struct CacheStats {
     pub total_entries: usize,
     pub stale_entries: usize,
+    pub total_size: usize,
 }
 
 impl Default for QueryClient {
@@ -201,5 +237,32 @@ mod tests {
         let stats = client.cache_stats();
         assert_eq!(stats.total_entries, 2);
         assert_eq!(stats.stale_entries, 0);
+    }
+}
+
+/// Serialization helpers for Instant
+mod instant_serde {
+    use serde::{Deserialize, Deserializer, Serialize, Serializer};
+    use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
+
+    pub fn serialize<S>(instant: &Instant, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        // Convert Instant to SystemTime for serialization
+        let system_time = SystemTime::now() - instant.elapsed();
+        let duration = system_time.duration_since(UNIX_EPOCH).unwrap_or(Duration::ZERO);
+        duration.serialize(serializer)
+    }
+
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<Instant, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let duration = Duration::deserialize(deserializer)?;
+        let system_time = UNIX_EPOCH + duration;
+        let now = SystemTime::now();
+        let elapsed = now.duration_since(system_time).unwrap_or(Duration::ZERO);
+        Ok(Instant::now() - elapsed)
     }
 }

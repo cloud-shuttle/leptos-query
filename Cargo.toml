@@ -1,6 +1,6 @@
 [package]
 name = "leptos-query-rs"
-version = "0.3.0"
+version = "0.4.0"
 edition = "2021"
 authors = ["CloudShuttle Team"]
 description = "A powerful, type-safe data fetching and caching library for Leptos 0.8 applications"
@@ -29,6 +29,15 @@ reqwest = { version = "0.11", features = ["json"] }
 # UUID generation
 uuid = { version = "1.0", features = ["v4", "js", "serde"] }
 
+# Async traits
+async-trait = "0.1"
+
+# Base64 encoding/decoding
+base64 = "0.21"
+
+# Concurrency primitives
+parking_lot = "0.12"
+
 # Error handling
 thiserror = "1.0"
 
@@ -39,7 +48,7 @@ chrono = { version = "0.4", features = ["serde"] }
 futures = "0.3"
 
 # Web APIs
-web-sys = { version = "0.3", features = ["console"] }
+web-sys = { version = "0.3", features = ["console", "Storage"] }
 js-sys = "0.3"
 wasm-bindgen = "0.2"
 wasm-bindgen-futures = "0.4"
