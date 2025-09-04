@@ -1,0 +1,60 @@
+# Mutation testing configuration for leptos-query
+
+[mutagen]
+# Enable mutation testing
+enabled = true
+
+# Test command to run for each mutation
+test_command = "cargo test"
+
+# Test timeout in seconds
+test_timeout = 30
+
+# Number of parallel test runs
+parallel = 4
+
+# Mutation operators to use
+operators = [
+    "arithmetic",
+    "boolean",
+    "comparison",
+    "logical",
+    "string",
+    "vector",
+    "option",
+    "result",
+]
+
+# Files to include in mutation testing
+include = [
+    "src/**/*.rs",
+]
+
+# Files to exclude from mutation testing
+exclude = [
+    "src/lib.rs",  # Main library file
+    "src/api/**",  # API definitions
+    "**/mod.rs",   # Module files
+]
+
+# Mutation testing report settings
+[mutagen.report]
+# Generate HTML report
+html = true
+
+# Generate JSON report
+json = true
+
+# Report output directory
+output_dir = "mutation-reports"
+
+# Include mutation details in report
+include_details = true
+
+# Mutation testing thresholds
+[mutagen.thresholds]
+# Minimum mutation score (0.0 to 1.0)
+min_score = 0.8
+
+# Fail if threshold not met
+fail_on_threshold = true

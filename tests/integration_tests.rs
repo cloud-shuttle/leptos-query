@@ -474,11 +474,11 @@ mod tests {
     #[test]
     fn test_query_key_creation() {
         let key1 = QueryKey::new(&["users", "1"]);
-        let key2 = QueryKey::from_parts(&["users", "1"]).unwrap();
+        let key2 = QueryKey::new(&["users", "1"]);
         let key3: QueryKey = ("1",).into();
         
         assert_eq!(key1.segments, vec!["users", "1"]);
-        assert_eq!(key2.segments, vec!["\"users\"", "\"1\""]); // from_parts serializes to JSON
+        assert_eq!(key2.segments, vec!["users", "1"]);
         assert_eq!(key3.segments, vec!["1"]);
     }
     

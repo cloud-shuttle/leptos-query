@@ -61,6 +61,9 @@ js-sys = "0.3"
 web-sys = { version = "0.3", features = ["console"] }
 criterion = "0.7"
 rand = "0.9"
+proptest = "1.4"
+# mutagen = "0.1"  # Not available, using manual mutation testing instead
+# mutagen-runner = "0.1"
 
 [features]
 default = ["csr"]
@@ -86,6 +89,22 @@ required-features = ["csr"]
 [[bench]]
 name = "query_benchmarks"
 harness = false
+
+[[test]]
+name = "query_lifecycle_tests"
+path = "tests/unit/query_lifecycle_tests.rs"
+
+[[test]]
+name = "cache_operations_tests"
+path = "tests/unit/cache_operations_tests.rs"
+
+[[test]]
+name = "property_tests"
+path = "tests/property/cache_invariants.rs"
+
+[[test]]
+name = "mutation_tests"
+path = "tests/mutation/manual_mutation_tests.rs"
 
 [package.metadata.docs.rs]
 all-features = true

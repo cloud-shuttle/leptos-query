@@ -115,6 +115,13 @@ impl<T: ToString + std::fmt::Display> From<(T,)> for QueryKey {
     }
 }
 
+/// Convert array to QueryKey
+impl<const N: usize> From<[&str; N]> for QueryKey {
+    fn from(segments: [&str; N]) -> Self {
+        Self::new(&segments)
+    }
+}
+
 /// Patterns for matching query keys
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum QueryKeyPattern {

@@ -1,4 +1,4 @@
-use leptos::*;
+use leptos::prelude::*;
 use leptos_query_rs::*;
 use serde::{Deserialize, Serialize};
 

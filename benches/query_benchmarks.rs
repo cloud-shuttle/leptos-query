@@ -1,6 +1,7 @@
-use criterion::{criterion_group, criterion_main, Criterion};
+use criterion::{criterion_group, criterion_main, Criterion, BenchmarkId};
 use leptos_query_rs::*;
 use leptos_query_rs::retry::{QueryError, should_retry_error};
+use leptos_query_rs::types::{QueryKey, QueryKeyPattern};
 use std::hint::black_box;
 use std::time::Duration;
 
@@ -42,8 +43,8 @@ fn benchmark_query_keys(c: &mut Criterion) {
         b.iter(|| {
             let key = QueryKey::new(&["users", "1"]);
             let pattern = QueryKeyPattern::Prefix(QueryKey::new(&["users"]));
-            // Note: QueryKeyPattern doesn't have a matches method in current API
-            black_box((key, pattern));
+            let matches = key.matches_pattern(&pattern);
+            black_box(matches);
         });
     });
     
@@ -213,6 +214,205 @@ fn benchmark_query_options(c: &mut Criterion) {
     group.finish();
 }
 
+// Benchmark: Cache operations with different data sizes
+fn benchmark_cache_operations(c: &mut Criterion) {
+    let mut group = c.benchmark_group("cache_operations");
+    
+    for size in [100, 1000, 10000].iter() {
+        group.bench_with_input(
+            BenchmarkId::new("set_query_data", size),
+            size,
+            |b, &size| {
+                let client = QueryClient::new();
+                let data = vec![0u8; size];
+                let key = QueryKey::new(&["bench", "data"]);
+                
+                b.iter(|| {
+                    let _ = client.set_query_data(&key, black_box(&data));
+                });
+            },
+        );
+        
+        group.bench_with_input(
+            BenchmarkId::new("get_query_data", size),
+            size,
+            |b, &size| {
+                let client = QueryClient::new();
+                let key = QueryKey::new(&["bench", "data"]);
+                let data = vec![0u8; size];
+                let _ = client.set_query_data(&key, &data);
+                
+                b.iter(|| {
+                    let entry = client.get_cache_entry(&key);
+                    black_box(entry);
+                });
+            },
+        );
+    }
+    
+    group.finish();
+}
+
+// Benchmark: Cache invalidation patterns
+fn benchmark_cache_invalidation(c: &mut Criterion) {
+    let mut group = c.benchmark_group("cache_invalidation");
+    
+    group.bench_function("exact_invalidation", |b| {
+        let client = QueryClient::new();
+        let data = BenchmarkUser {
+            id: 1,
+            name: "Test User".to_string(),
+            email: "test@example.com".to_string(),
+        };
+        
+        // Pre-populate cache
+        for i in 0..100 {
+            let key = QueryKey::new(&["users", &i.to_string()]);
+            let _ = client.set_query_data(&key, data.clone());
+        }
+        
+        b.iter(|| {
+            let key = QueryKey::new(&["users", "50"]);
+            let pattern = QueryKeyPattern::Exact(key);
+            client.invalidate_queries(&pattern);
+        });
+    });
+    
+    group.bench_function("prefix_invalidation", |b| {
+        let client = QueryClient::new();
+        let data = BenchmarkUser {
+            id: 1,
+            name: "Test User".to_string(),
+            email: "test@example.com".to_string(),
+        };
+        
+        // Pre-populate cache
+        for i in 0..100 {
+            let key = QueryKey::new(&["users", &i.to_string()]);
+            let _ = client.set_query_data(&key, data.clone());
+        }
+        
+        b.iter(|| {
+            let pattern = QueryKeyPattern::Prefix(QueryKey::new(&["users"]));
+            client.invalidate_queries(&pattern);
+        });
+    });
+    
+    group.bench_function("contains_invalidation", |b| {
+        let client = QueryClient::new();
+        let data = BenchmarkUser {
+            id: 1,
+            name: "Test User".to_string(),
+            email: "test@example.com".to_string(),
+        };
+        
+        // Pre-populate cache
+        for i in 0..100 {
+            let key = QueryKey::new(&["users", &i.to_string()]);
+            let _ = client.set_query_data(&key, data.clone());
+        }
+        
+        b.iter(|| {
+            let pattern = QueryKeyPattern::Contains("5".to_string());
+            client.invalidate_queries(&pattern);
+        });
+    });
+    
+    group.finish();
+}
+
+// Benchmark: Concurrent cache access
+fn benchmark_concurrent_access(c: &mut Criterion) {
+    let mut group = c.benchmark_group("concurrent_access");
+    
+    group.bench_function("concurrent_reads", |b| {
+        let client = QueryClient::new();
+        let key = QueryKey::new(&["concurrent", "test"]);
+        let data = BenchmarkUser {
+            id: 1,
+            name: "Test User".to_string(),
+            email: "test@example.com".to_string(),
+        };
+        let _ = client.set_query_data(&key, data);
+        
+        b.iter(|| {
+            // Simulate concurrent reads
+            for _ in 0..10 {
+                let entry = client.get_cache_entry(&key);
+                black_box(entry);
+            }
+        });
+    });
+    
+    group.bench_function("concurrent_writes", |b| {
+        let client = QueryClient::new();
+        let data = BenchmarkUser {
+            id: 1,
+            name: "Test User".to_string(),
+            email: "test@example.com".to_string(),
+        };
+        
+        b.iter(|| {
+            // Simulate concurrent writes
+            for i in 0..10 {
+                let key = QueryKey::new(&["concurrent", &i.to_string()]);
+                let _ = client.set_query_data(&key, data.clone());
+            }
+        });
+    });
+    
+    group.finish();
+}
+
+// Benchmark: Memory usage and garbage collection
+fn benchmark_memory_usage(c: &mut Criterion) {
+    let mut group = c.benchmark_group("memory_usage");
+    
+    group.bench_function("cache_growth", |b| {
+        let client = QueryClient::new();
+        let data = BenchmarkUser {
+            id: 1,
+            name: "Test User".to_string(),
+            email: "test@example.com".to_string(),
+        };
+        
+        b.iter(|| {
+            // Add many entries to test memory growth
+            for i in 0..1000 {
+                let key = QueryKey::new(&["memory", &i.to_string()]);
+                let _ = client.set_query_data(&key, data.clone());
+            }
+            
+            // Get stats
+            let stats = client.cache_stats();
+            black_box(stats);
+        });
+    });
+    
+    group.bench_function("cache_cleanup", |b| {
+        let client = QueryClient::new();
+        let data = BenchmarkUser {
+            id: 1,
+            name: "Test User".to_string(),
+            email: "test@example.com".to_string(),
+        };
+        
+        // Pre-populate cache
+        for i in 0..1000 {
+            let key = QueryKey::new(&["cleanup", &i.to_string()]);
+            let _ = client.set_query_data(&key, data.clone());
+        }
+        
+        b.iter(|| {
+            client.cleanup_stale_entries();
+            let stats = client.cache_stats();
+            black_box(stats);
+        });
+    });
+    
+    group.finish();
+}
+
 // Configure criterion
 criterion_group!(
     name = benches;
@@ -225,7 +425,11 @@ criterion_group!(
         benchmark_query_client,
         benchmark_retry_logic,
         benchmark_serialization,
-        benchmark_query_options
+        benchmark_query_options,
+        benchmark_cache_operations,
+        benchmark_cache_invalidation,
+        benchmark_concurrent_access,
+        benchmark_memory_usage
 );
 
 criterion_main!(benches);
