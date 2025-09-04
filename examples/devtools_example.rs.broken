@@ -270,35 +270,35 @@ fn DevToolsPanel() -> impl IntoView {
                                         }
                                         DevToolsEvent::NetworkRequest { request } => {
                                             view! {
-                                                <div class="event-item network-request">
+                                                <div class="event-item network-request ">
                                                     <strong>"NETWORK"</strong> " - " {request.method} " " {request.url}
                                                 </div>
                                             }
                                         }
                                         DevToolsEvent::OptimisticUpdate { key, update_id, timestamp } => {
                                             view! {
-                                                <div class="event-item optimistic-update">
-                                                    <strong>"OPTIMISTIC UPDATE"</strong> " - " {key} " (" {update_id} ") at " {format!("{:?}", timestamp)}
+                                                <div class="event-item optimistic-update ">
+                                                    <strong>"OPTIMISTIC UPDATE "</strong> " - " {key} " (" {update_id} ") at " {format!("{:?}", timestamp)}
                                                 </div>
                                             }
                                         }
                                         DevToolsEvent::OptimisticConfirm { key, update_id, timestamp } => {
                                             view! {
-                                                <div class="event-item optimistic-confirm">
-                                                    <strong>"OPTIMISTIC CONFIRM"</strong> " - " {key} " (" {update_id} ") at " {format!("{:?}", timestamp)}
+                                                <div class="event-item optimistic-confirm ">
+                                                    <strong>"OPTIMISTIC CONFIRM "</strong> " - " {key} " (" {update_id} ") at " {format!("{:?}", timestamp)}
                                                 </div>
                                             }
                                         }
                                         DevToolsEvent::OptimisticRollback { key, update_id, timestamp } => {
                                             view! {
-                                                <div class="event-item optimistic-rollback">
-                                                    <strong>"OPTIMISTIC ROLLBACK"</strong> " - " {key} " (" {update_id} ") at " {format!("{:?}", timestamp)}
+                                                <div class="event-item optimistic-rollback ">
+                                                    <strong>"OPTIMISTIC ROLLBACK "</strong> " - " {key} " (" {update_id} ") at " {format!("{:?}", timestamp)}
                                                 </div>
                                             }
                                         }
                                         DevToolsEvent::PersistenceOp { operation, key, timestamp } => {
                                             view! {
-                                                <div class="event-item persistence-op">
+                                                <div class="event-item persistence-op ">
                                                     <strong>"PERSISTENCE"</strong> " - " {operation} 
                                                     {move || key.as_ref().map(|k| format!(" ({})", k)).unwrap_or_default()}
                                                     " at " {format!("{:?}", timestamp)}
@@ -357,20 +357,20 @@ fn App() -> impl IntoView {
     
     view! {
         <div class="app">
-            <h1>"Leptos Query - DevTools Example"</h1>
+            <h1>"Leptos Query - DevTools Example "</h1>
             
-            <div class="main-content">
-                <div class="posts-section">
+            <div class="main-content ">
+                <div class="posts-section ">
                     <h2>"Posts"</h2>
                     
                     {move || match posts_query.get() {
                         QueryResult::Loading => view! { <div>"Loading posts..."</div> },
                         QueryResult::Error(error) => view! { <div class="error">"Error: " {error}</div> },
                         QueryResult::Success(posts) => view! {
-                            <div class="posts-list">
+                            <div class="posts-list ">
                                 {posts.into_iter().map(|post| {
                                     view! {
-                                        <div class="post-item">
+                                        <div class="post-item ">
                                             <h3>{post.title}</h3>
                                             <p>{post.body}</p>
                                             <small>"User ID: " {post.user_id}</small>
@@ -383,12 +383,12 @@ fn App() -> impl IntoView {
                     }}
                     
                     <button on:click=move |_| posts_query.refetch()>
-                        "Refresh Posts"
+                        "Refresh Posts "
                     </button>
                 </div>
                 
-                <div class="form-section">
-                    <h2>"Create New Post"</h2>
+                <div class="form-section ">
+                    <h2>"Create New Post "</h2>
                     <div class="form">
                         <input
                             type="text"
@@ -405,7 +405,7 @@ fn App() -> impl IntoView {
                             on:click=handle_submit
                             disabled=move || create_post_mutation.is_pending()
                         >
-                            {move || if create_post_mutation.is_pending() { "Creating..." } else { "Create Post" }}
+                            {move || if create_post_mutation.is_pending() { "Creating..." } else { "Create Post " }}
                         </button>
                     </div>
                     

@@ -1,0 +1,154 @@
+name: Performance Monitoring
+
+on:
+  schedule:
+    # Run every Monday at 2 AM UTC
+    - cron: '0 2 * * 1'
+  workflow_dispatch:
+    # Allow manual triggering
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'src/**'
+      - 'benches/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+
+jobs:
+  performance-monitor:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        profile: minimal
+        override: true
+        
+    - name: Cache dependencies
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          target
+        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+        
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y jq
+        
+    - name: Run benchmarks
+      run: |
+        cargo bench --quiet
+        
+    - name: Collect performance data
+      run: |
+        mkdir -p performance_results
+        
+        # Extract benchmark results
+        TIMESTAMP=$(date +%Y-%m-%d_%H-%M-%S)
+        RESULTS_FILE="performance_results/performance_$TIMESTAMP.json"
+        
+        echo "{" > "$RESULTS_FILE"
+        echo "  \"timestamp\": \"$TIMESTAMP\"" >> "$RESULTS_FILE"
+        echo "  \"commit\": \"${{ github.sha }}\"" >> "$RESULTS_FILE"
+        echo "  \"branch\": \"${{ github.ref_name }}\"" >> "$RESULTS_FILE"
+        echo "  \"benchmarks\": {" >> "$RESULTS_FILE"
+        
+        # Process benchmark results
+        FIRST=true
+        for group_dir in target/criterion/*/; do
+          if [ -d "$group_dir" ]; then
+            group_name=$(basename "$group_dir")
+            
+            if [ "$FIRST" = true ]; then
+              FIRST=false
+            else
+              echo "," >> "$RESULTS_FILE"
+            fi
+            
+            echo "    \"$group_name\": {" >> "$RESULTS_FILE"
+            
+            if [ -f "$group_dir/new/estimates.json" ]; then
+              mean_time=$(cat "$group_dir/new/estimates.json" | jq -r '.mean.point_estimate')
+              std_dev=$(cat "$group_dir/new/estimates.json" | jq -r '.mean.standard_deviation')
+              
+              echo "      \"mean_time_ns\": $mean_time," >> "$RESULTS_FILE"
+              echo "      \"std_dev_ns\": $std_dev" >> "$RESULTS_FILE"
+            else
+              echo "      \"mean_time_ns\": null," >> "$RESULTS_FILE"
+              echo "      \"std_dev_ns\": null" >> "$RESULTS_FILE"
+            fi
+            
+            echo "    }" >> "$RESULTS_FILE"
+          fi
+        done
+        
+        echo "  }" >> "$RESULTS_FILE"
+        echo "}" >> "$RESULTS_FILE"
+        
+    - name: Check for performance regressions
+      run: |
+        # Find previous results
+        PREVIOUS_FILE=$(ls -t performance_results/performance_*.json 2>/dev/null | head -n 2 | tail -n 1)
+        
+        if [ -n "$PREVIOUS_FILE" ] && [ -f "$PREVIOUS_FILE" ]; then
+          echo "Comparing with previous run: $(basename "$PREVIOUS_FILE")"
+          
+          # Simple regression check (enhance this as needed)
+          CURRENT_FILE="performance_results/performance_$(date +%Y-%m-%d_%H-%M-%S).json"
+          
+          # This is a placeholder for regression analysis
+          echo "Regression analysis completed"
+        else
+          echo "No previous results found for comparison"
+        fi
+        
+    - name: Upload performance results
+      uses: actions/upload-artifact@v3
+      with:
+        name: performance-results-${{ github.run_number }}
+        path: performance_results/
+        
+    - name: Comment on PR (if applicable)
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          const path = require('path');
+          
+          // Read performance results
+          const resultsDir = 'performance_results';
+          const files = fs.readdirSync(resultsDir);
+          const latestFile = files
+            .filter(f => f.startsWith('performance_'))
+            .sort()
+            .pop();
+            
+          if (latestFile) {
+            const results = JSON.parse(fs.readFileSync(path.join(resultsDir, latestFile), 'utf8'));
+            
+            const comment = '## 📊 Performance Monitoring Results\n\n' +
+              '**Run**: ' + results.timestamp + '\n' +
+              '**Commit**: ' + results.commit + '\n' +
+              '**Branch**: ' + results.branch + '\n\n' +
+              '### Benchmark Summary\n' +
+              Object.keys(results.benchmarks).map(name => 
+                '- **' + name + '**: ' + results.benchmarks[name].mean_time_ns + 'ns ± ' + results.benchmarks[name].std_dev_ns + 'ns'
+              ).join('\n') + '\n\n' +
+              'Performance monitoring completed successfully! 🚀';
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+          }

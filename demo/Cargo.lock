@@ -1113,13 +1113,16 @@ dependencies = [
 
 [[package]]
 name = "leptos-query-rs"
-version = "0.2.0"
+version = "0.4.1"
 dependencies = [
+ "async-trait",
+ "base64 0.21.7",
  "bincode",
  "chrono",
  "futures",
  "js-sys",
  "leptos",
+ "parking_lot",
  "reqwest",
  "serde",
  "serde_json",

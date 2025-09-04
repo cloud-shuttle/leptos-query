@@ -1,5 +1,5 @@
 use leptos::*;
-use leptos::prelude::{Get, Set, ElementChild, ClassAttribute, OnAttribute, signal, event_target_value, use_context, Effect, mount_to_body};
+use leptos::prelude::{Get, Set, ElementChild, ClassAttribute, OnAttribute, signal, event_target_value, use_context, Effect, mount_to_body, Callable};
 use leptos_query_rs::*;
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
@@ -107,38 +107,13 @@ fn UserProfile(user_id: u32) -> impl IntoView {
             
             // User data section
             <div class="user-data">
-                {move || match user_query.data.get() {
-                    Some(user) => view! {
-                        <div class="user-info">
-                            <img src=user.avatar alt="Avatar" class="avatar"/>
-                            <div class="user-details">
-                                <h4>{user.name}</h4>
-                                <p>"Email: " {user.email}</p>
-                                <p>"ID: " {user.id}</p>
-                            </div>
-                        </div>
-                    },
-                    None if user_query.is_loading.get() => view! {
-                        <div class="user-info">
-                            <img src="" alt="" class="avatar"/>
-                            <div class="user-details">
-                                <p>"Loading user..."</p>
-                                <p></p>
-                                <p></p>
-                            </div>
-                        </div>
-                    },
-                    None => view! {
-                        <div class="user-info">
-                            <img src="" alt="" class="avatar"/>
-                            <div class="user-details">
-                                <p>"No user found"</p>
-                                <p></p>
-                                <p></p>
-                            </div>
-                        </div>
-                    },
-                }}
+                {move || user_query.data.get().map(|user| view! {
+                    <div>
+                        <h4>{user.name}</h4>
+                        <p>"Email: " {user.email}</p>
+                        <p>"ID: " {user.id}</p>
+                    </div>
+                })}
                 
                 // Error display
                 {move || user_query.error.get().map(|error| view! {
@@ -151,35 +126,23 @@ fn UserProfile(user_id: u32) -> impl IntoView {
             // Posts section
             <div class="posts-section">
                 <h4>"User Posts"</h4>
-                {move || match posts_query.data.get() {
-                    Some(posts) => view! {
-                        <div class="posts-list">
-                            {posts.into_iter().map(|post| view! {
-                                <div class="post">
-                                    <h5>{post.title}</h5>
-                                    <p>{post.content}</p>
-                                </div>
-                            }).collect::<Vec<_>>()}
-                        </div>
-                    },
-                    None if posts_query.is_loading.get() => view! {
-                        <div class="posts-list">
-                            <div class="loading">"Loading posts..."</div>
-                        </div>
-                    },
-                    None => view! {
-                        <div class="posts-list">
-                            <div class="no-posts">"No posts found"</div>
-                        </div>
-                    },
-                }}
+                {move || posts_query.data.get().map(|posts| view! {
+                    <div>
+                        {posts.into_iter().map(|post| view! {
+                            <div>
+                                <h5>{post.title}</h5>
+                                <p>{post.content}</p>
+                            </div>
+                        }).collect::<Vec<_>>()}
+                    </div>
+                })}
             </div>
             
             // Actions
             <div class="actions">
                 <button 
                     class="btn btn-primary"
-                    on:click=move |_| user_query.refetch.emit(())
+                    on:click=move |_| user_query.refetch.run(())
                     disabled=move || user_query.is_loading.get()
                 >
                     {move || if user_query.is_loading.get() { "Refreshing..." } else { "Refresh User" }}
@@ -187,7 +150,7 @@ fn UserProfile(user_id: u32) -> impl IntoView {
                 
                 <button 
                     class="btn btn-secondary"
-                    on:click=move |_| posts_query.refetch.emit(())
+                    on:click=move |_| posts_query.refetch.run(())
                     disabled=move || posts_query.is_loading.get()
                 >
                     {move || if posts_query.is_loading.get() { "Refreshing..." } else { "Refresh Posts" }}
@@ -215,7 +178,7 @@ fn CreatePostForm(user_id: u32) -> impl IntoView {
                 content: content.get(),
                 author_id: user_id,
             };
-            mutation.mutate.emit(post);
+            mutation.mutate.run(post);
             
             // Clear form
             set_title.set(String::new());

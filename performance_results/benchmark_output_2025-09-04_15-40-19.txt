@@ -1,0 +1,294 @@
+warning: function `mock_fetch_page` is never used
+   --> src/infinite/mod.rs:369:14
+    |
+369 |     async fn mock_fetch_page(page: usize) -> Result<Page<...
+    |              ^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` on by default
+
+
+running 26 tests
+iiiiiiiiiiiiiiiiiiiiiiiiii
+test result: ok. 0 passed; 0 failed; 26 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+Gnuplot not found, using plotters backend
+Benchmarking query_keys/simple_key
+Benchmarking query_keys/simple_key: Warming up for 2.0000 s
+Benchmarking query_keys/simple_key: Collecting 10 samples in estimated 5.0000 s (38M iterations)
+Benchmarking query_keys/simple_key: Analyzing
+query_keys/simple_key   time:   [111.87 ns 127.18 ns 162.76 ns]
+                        change: [−60.007% −41.641% −16.390%] (p = 0.02 < 0.05)
+                        Performance has improved.
+Found 1 outliers among 10 measurements (10.00%)
+  1 (10.00%) high mild
+Benchmarking query_keys/complex_key
+Benchmarking query_keys/complex_key: Warming up for 2.0000 s
+Benchmarking query_keys/complex_key: Collecting 10 samples in estimated 5.0000 s (23M iterations)
+Benchmarking query_keys/complex_key: Analyzing
+query_keys/complex_key  time:   [191.08 ns 197.49 ns 203.80 ns]
+                        change: [−20.374% −12.301% −5.9101%] (p = 0.01 < 0.05)
+                        Performance has improved.
+Found 1 outliers among 10 measurements (10.00%)
+  1 (10.00%) high mild
+Benchmarking query_keys/dynamic_key
+Benchmarking query_keys/dynamic_key: Warming up for 2.0000 s
+Benchmarking query_keys/dynamic_key: Collecting 10 samples in estimated 5.0000 s (30M iterations)
+Benchmarking query_keys/dynamic_key: Analyzing
+query_keys/dynamic_key  time:   [158.45 ns 164.82 ns 173.76 ns]
+                        change: [−38.913% −19.783% −1.2837%] (p = 0.18 > 0.05)
+                        No change in performance detected.
+Found 1 outliers among 10 measurements (10.00%)
+  1 (10.00%) high severe
+Benchmarking query_keys/key_pattern_matching
+Benchmarking query_keys/key_pattern_matching: Warming up for 2.0000 s
+Benchmarking query_keys/key_pattern_matching: Collecting 10 samples in estimated 5.0000 s (15M iterations)
+Benchmarking query_keys/key_pattern_matching: Analyzing
+query_keys/key_pattern_matching
+                        time:   [206.50 ns 214.28 ns 222.74 ns]
+                        change: [−16.548% −10.268% −3.1143%] (p = 0.02 < 0.05)
+                        Performance has improved.
+
+Benchmarking query_client/client_creation
+Benchmarking query_client/client_creation: Warming up for 2.0000 s
+Benchmarking query_client/client_creation: Collecting 10 samples in estimated 5.0000 s (221M iterations)
+Benchmarking query_client/client_creation: Analyzing
+query_client/client_creation
+                        time:   [21.419 ns 25.892 ns 35.581 ns]
+                        change: [−6.5875% +19.185% +58.562%] (p = 0.31 > 0.05)
+                        No change in performance detected.
+Found 2 outliers among 10 measurements (20.00%)
+  2 (20.00%) high severe
+Benchmarking query_client/cache_operations
+Benchmarking query_client/cache_operations: Warming up for 2.0000 s
+Benchmarking query_client/cache_operations: Collecting 10 samples in estimated 5.0000 s (5.2M iterations)
+Benchmarking query_client/cache_operations: Analyzing
+query_client/cache_operations
+                        time:   [840.67 ns 886.10 ns 969.93 ns]
+                        change: [−46.296% −30.688% −6.9596%] (p = 0.04 < 0.05)
+                        Performance has improved.
+Found 2 outliers among 10 measurements (20.00%)
+  1 (10.00%) high mild
+  1 (10.00%) high severe
+Benchmarking query_client/cache_removal
+Benchmarking query_client/cache_removal: Warming up for 2.0000 s
+Benchmarking query_client/cache_removal: Collecting 10 samples in estimated 5.0000 s (6.2M iterations)
+Benchmarking query_client/cache_removal: Analyzing
+query_client/cache_removal
+                        time:   [758.87 ns 1.1181 µs 1.4686 µs]
+                        change: [−80.495% −68.233% −47.692%] (p = 0.00 < 0.05)
+                        Performance has improved.
+Found 1 outliers among 10 measurements (10.00%)
+  1 (10.00%) high mild
+
+Benchmarking retry_logic/retry_config_creation
+Benchmarking retry_logic/retry_config_creation: Warming up for 2.0000 s
+Benchmarking retry_logic/retry_config_creation: Collecting 10 samples in estimated 5.0000 s (4.2B iterations)
+Benchmarking retry_logic/retry_config_creation: Analyzing
+retry_logic/retry_config_creation
+                        time:   [1.1239 ns 1.1885 ns 1.3229 ns]
+                        change: [−76.855% −71.886% −64.914%] (p = 0.00 < 0.05)
+                        Performance has improved.
+Found 2 outliers among 10 measurements (20.00%)
+  2 (20.00%) high severe
+Benchmarking retry_logic/error_retryability
+Benchmarking retry_logic/error_retryability: Warming up for 2.0000 s
+Benchmarking retry_logic/error_retryability: Collecting 10 samples in estimated 5.0000 s (2.3B iterations)
+Benchmarking retry_logic/error_retryability: Analyzing
+retry_logic/error_retryability
+                        time:   [2.0723 ns 2.2259 ns 2.3785 ns]
+                        change: [−81.060% −73.755% −64.607%] (p = 0.00 < 0.05)
+                        Performance has improved.
+Found 2 outliers among 10 measurements (20.00%)
+  2 (20.00%) high severe
+
+Benchmarking serialization/serde_json_serialize
+Benchmarking serialization/serde_json_serialize: Warming up for 2.0000 s
+Benchmarking serialization/serde_json_serialize: Collecting 10 samples in estimated 5.0000 s (24M iterations)
+Benchmarking serialization/serde_json_serialize: Analyzing
+serialization/serde_json_serialize
+                        time:   [163.89 ns 209.55 ns 257.10 ns]
+                        change: [−5.3787% +21.971% +56.101%] (p = 0.20 > 0.05)
+                        No change in performance detected.
+Found 1 outliers among 10 measurements (10.00%)
+  1 (10.00%) high mild
+Benchmarking serialization/serde_json_deserialize
+Benchmarking serialization/serde_json_deserialize: Warming up for 2.0000 s
+Benchmarking serialization/serde_json_deserialize: Collecting 10 samples in estimated 5.0000 s (31M iterations)
+Benchmarking serialization/serde_json_deserialize: Analyzing
+serialization/serde_json_deserialize
+                        time:   [120.68 ns 125.84 ns 131.32 ns]
+                        change: [−7.2176% +1.2511% +10.388%] (p = 0.79 > 0.05)
+                        No change in performance detected.
+Benchmarking serialization/bincode_serialize
+Benchmarking serialization/bincode_serialize: Warming up for 2.0000 s
+Benchmarking serialization/bincode_serialize: Collecting 10 samples in estimated 5.0000 s (31M iterations)
+Benchmarking serialization/bincode_serialize: Analyzing
+serialization/bincode_serialize
+                        time:   [117.61 ns 127.59 ns 147.85 ns]
+                        change: [−46.828% −32.452% −12.739%] (p = 0.01 < 0.05)
+                        Performance has improved.
+Found 2 outliers among 10 measurements (20.00%)
+  2 (20.00%) high severe
+Benchmarking serialization/bincode_deserialize
+Benchmarking serialization/bincode_deserialize: Warming up for 2.0000 s
+Benchmarking serialization/bincode_deserialize: Collecting 10 samples in estimated 5.0000 s (54M iterations)
+Benchmarking serialization/bincode_deserialize: Analyzing
+serialization/bincode_deserialize
+                        time:   [87.970 ns 92.206 ns 96.544 ns]
+                        change: [−76.124% −73.084% −69.159%] (p = 0.00 < 0.05)
+                        Performance has improved.
+
+Benchmarking query_options/options_builder
+Benchmarking query_options/options_builder: Warming up for 2.0000 s
+Benchmarking query_options/options_builder: Collecting 10 samples in estimated 5.0000 s (2.3B iterations)
+Benchmarking query_options/options_builder: Analyzing
+query_options/options_builder
+                        time:   [2.1442 ns 2.7681 ns 3.6873 ns]
+                        change: [−72.400% −65.539% −55.294%] (p = 0.00 < 0.05)
+                        Performance has improved.
+Found 1 outliers among 10 measurements (10.00%)
+  1 (10.00%) high mild
+Benchmarking query_options/mutation_options_builder
+Benchmarking query_options/mutation_options_builder: Warming up for 2.0000 s
+Benchmarking query_options/mutation_options_builder: Collecting 10 samples in estimated 5.0000 s (2.2B iterations)
+Benchmarking query_options/mutation_options_builder: Analyzing
+query_options/mutation_options_builder
+                        time:   [1.4944 ns 1.6570 ns 2.0532 ns]
+                        change: [−76.128% −67.586% −54.214%] (p = 0.00 < 0.05)
+                        Performance has improved.
+Found 1 outliers among 10 measurements (10.00%)
+  1 (10.00%) high severe
+
+Benchmarking cache_operations/set_query_data/100
+Benchmarking cache_operations/set_query_data/100: Warming up for 2.0000 s
+Benchmarking cache_operations/set_query_data/100: Collecting 10 samples in estimated 5.0000 s (16M iterations)
+Benchmarking cache_operations/set_query_data/100: Analyzing
+cache_operations/set_query_data/100
+                        time:   [237.30 ns 263.36 ns 315.80 ns]
+                        change: [−78.648% −74.713% −69.678%] (p = 0.00 < 0.05)
+                        Performance has improved.
+Found 1 outliers among 10 measurements (10.00%)
+  1 (10.00%) high severe
+Benchmarking cache_operations/get_query_data/100
+Benchmarking cache_operations/get_query_data/100: Warming up for 2.0000 s
+Benchmarking cache_operations/get_query_data/100: Collecting 10 samples in estimated 5.0000 s (117M iterations)
+Benchmarking cache_operations/get_query_data/100: Analyzing
+cache_operations/get_query_data/100
+                        time:   [44.819 ns 50.001 ns 55.339 ns]
+                        change: [−72.202% −68.258% −63.194%] (p = 0.00 < 0.05)
+                        Performance has improved.
+Found 1 outliers among 10 measurements (10.00%)
+  1 (10.00%) high mild
+Benchmarking cache_operations/set_query_data/1000
+Benchmarking cache_operations/set_query_data/1000: Warming up for 2.0000 s
+Benchmarking cache_operations/set_query_data/1000: Collecting 10 samples in estimated 5.0000 s (6.6M iterations)
+Benchmarking cache_operations/set_query_data/1000: Analyzing
+cache_operations/set_query_data/1000
+                        time:   [574.95 ns 585.27 ns 593.24 ns]
+                        change: [−43.244% −28.521% −7.8343%] (p = 0.03 < 0.05)
+                        Performance has improved.
+Benchmarking cache_operations/get_query_data/1000
+Benchmarking cache_operations/get_query_data/1000: Warming up for 2.0000 s
+Benchmarking cache_operations/get_query_data/1000: Collecting 10 samples in estimated 5.0000 s (52M iterations)
+Benchmarking cache_operations/get_query_data/1000: Analyzing
+cache_operations/get_query_data/1000
+                        time:   [71.346 ns 75.161 ns 81.276 ns]
+                        change: [−51.118% −34.683% −9.2723%] (p = 0.03 < 0.05)
+                        Performance has improved.
+Found 1 outliers among 10 measurements (10.00%)
+  1 (10.00%) high severe
+Benchmarking cache_operations/set_query_data/10000
+Benchmarking cache_operations/set_query_data/10000: Warming up for 2.0000 s
+Benchmarking cache_operations/set_query_data/10000: Collecting 10 samples in estimated 5.0000 s (1.3M iterations)
+Benchmarking cache_operations/set_query_data/10000: Analyzing
+cache_operations/set_query_data/10000
+                        time:   [4.1278 µs 5.0437 µs 6.4048 µs]
+                        change: [+5.7461% +24.557% +49.963%] (p = 0.04 < 0.05)
+                        Performance has regressed.
+Found 1 outliers among 10 measurements (10.00%)
+  1 (10.00%) high mild
+Benchmarking cache_operations/get_query_data/10000
+Benchmarking cache_operations/get_query_data/10000: Warming up for 2.0000 s
+Benchmarking cache_operations/get_query_data/10000: Collecting 10 samples in estimated 5.0000 s (16M iterations)
+Benchmarking cache_operations/get_query_data/10000: Analyzing
+cache_operations/get_query_data/10000
+                        time:   [208.89 ns 217.95 ns 223.80 ns]
+                        change: [−3.5290% +4.6339% +11.320%] (p = 0.28 > 0.05)
+                        No change in performance detected.
+Found 1 outliers among 10 measurements (10.00%)
+  1 (10.00%) high mild
+
+Benchmarking cache_invalidation/exact_invalidation
+Benchmarking cache_invalidation/exact_invalidation: Warming up for 2.0000 s
+Benchmarking cache_invalidation/exact_invalidation: Collecting 10 samples in estimated 5.0001 s (4.0M iterations)
+Benchmarking cache_invalidation/exact_invalidation: Analyzing
+cache_invalidation/exact_invalidation
+                        time:   [1.2342 µs 1.3628 µs 1.5034 µs]
+                        change: [+13.781% +27.276% +44.635%] (p = 0.00 < 0.05)
+                        Performance has regressed.
+Found 1 outliers among 10 measurements (10.00%)
+  1 (10.00%) high mild
+Benchmarking cache_invalidation/prefix_invalidation
+Benchmarking cache_invalidation/prefix_invalidation: Warming up for 2.0000 s
+Benchmarking cache_invalidation/prefix_invalidation: Collecting 10 samples in estimated 5.0000 s (72M iterations)
+Benchmarking cache_invalidation/prefix_invalidation: Analyzing
+cache_invalidation/prefix_invalidation
+                        time:   [65.725 ns 75.120 ns 83.287 ns]
+                        change: [+1.6043% +11.538% +23.986%] (p = 0.04 < 0.05)
+                        Performance has regressed.
+Found 2 outliers among 10 measurements (20.00%)
+  1 (10.00%) high mild
+  1 (10.00%) high severe
+Benchmarking cache_invalidation/contains_invalidation
+Benchmarking cache_invalidation/contains_invalidation: Warming up for 2.0000 s
+Benchmarking cache_invalidation/contains_invalidation: Collecting 10 samples in estimated 5.0000 s (6.4M iterations)
+Benchmarking cache_invalidation/contains_invalidation: Analyzing
+cache_invalidation/contains_invalidation
+                        time:   [652.50 ns 687.83 ns 724.18 ns]
+                        change: [+0.4538% +6.6902% +13.195%] (p = 0.07 > 0.05)
+                        No change in performance detected.
+Found 1 outliers among 10 measurements (10.00%)
+  1 (10.00%) high mild
+
+Benchmarking concurrent_access/concurrent_reads
+Benchmarking concurrent_access/concurrent_reads: Warming up for 2.0000 s
+Benchmarking concurrent_access/concurrent_reads: Collecting 10 samples in estimated 5.0000 s (7.2M iterations)
+Benchmarking concurrent_access/concurrent_reads: Analyzing
+concurrent_access/concurrent_reads
+                        time:   [543.43 ns 581.80 ns 648.38 ns]
+                        change: [+18.358% +25.796% +36.473%] (p = 0.00 < 0.05)
+                        Performance has regressed.
+Found 1 outliers among 10 measurements (10.00%)
+  1 (10.00%) high severe
+Benchmarking concurrent_access/concurrent_writes
+Benchmarking concurrent_access/concurrent_writes: Warming up for 2.0000 s
+Benchmarking concurrent_access/concurrent_writes: Collecting 10 samples in estimated 5.0002 s (968k iterations)
+Benchmarking concurrent_access/concurrent_writes: Analyzing
+concurrent_access/concurrent_writes
+                        time:   [4.5082 µs 4.8311 µs 5.3760 µs]
+                        change: [−5.7962% +14.102% +43.377%] (p = 0.33 > 0.05)
+                        No change in performance detected.
+Found 1 outliers among 10 measurements (10.00%)
+  1 (10.00%) high severe
+
+Benchmarking memory_usage/cache_growth
+Benchmarking memory_usage/cache_growth: Warming up for 2.0000 s
+Benchmarking memory_usage/cache_growth: Collecting 10 samples in estimated 5.0216 s (9900 iterations)
+Benchmarking memory_usage/cache_growth: Analyzing
+memory_usage/cache_growth
+                        time:   [479.66 µs 640.65 µs 862.09 µs]
+                        change: [−66.142% −59.341% −50.656%] (p = 0.00 < 0.05)
+                        Performance has improved.
+Found 2 outliers among 10 measurements (20.00%)
+  2 (20.00%) high severe
+Benchmarking memory_usage/cache_cleanup
+Benchmarking memory_usage/cache_cleanup: Warming up for 2.0000 s
+Benchmarking memory_usage/cache_cleanup: Collecting 10 samples in estimated 5.0000 s (647M iterations)
+Benchmarking memory_usage/cache_cleanup: Analyzing
+memory_usage/cache_cleanup
+                        time:   [7.4301 ns 8.2713 ns 9.3868 ns]
+                        change: [−43.785% −32.680% −19.944%] (p = 0.00 < 0.05)
+                        Performance has improved.
+Found 1 outliers among 10 measurements (10.00%)
+  1 (10.00%) high mild
+
