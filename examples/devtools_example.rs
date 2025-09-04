@@ -257,14 +257,14 @@ fn DevToolsPanel() -> impl IntoView {
                                             view! {
                                                 <div class="event-item query-complete">
                                                     <strong>"QUERY COMPLETE"</strong> " - " {key} " (" {if success { "SUCCESS" } else { "ERROR" } }) " 
-                                                    "in " {format!("{:.2}ms", duration.as_millis() as f64)} " at " {format!("{:?}", timestamp)}
+                                                    "in " {format!("{:.2}ms ", duration.as_millis() as f64)} " at " {format!("{:?}", timestamp)}
                                                 </div>
                                             }
                                         }
                                         DevToolsEvent::CacheOp { operation } => {
                                             view! {
-                                                <div class="event-item cache-op">
-                                                    <strong>"CACHE OP"</strong> " - " {format!("{:?}", operation)}
+                                                <div class="event-item cache-op ">
+                                                    <strong>"CACHE OP "</strong> " - " {format!("{:?}", operation)}
                                                 </div>
                                             }
                                         }

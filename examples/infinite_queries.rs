@@ -1,4 +1,5 @@
 use leptos::prelude::*;
+use leptos::task::spawn_local;
 use leptos_query_rs::*;
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
@@ -84,7 +85,7 @@ fn InfinitePosts() -> impl IntoView {
                     page.data.into_iter().enumerate().map(move |(item_idx, post)| {
                         let global_idx = page_idx * 5 + item_idx;
                         view! {
-                            <div key=global_idx class="post-item">
+                            <div class="post-item">
                                 <h3>{post.title}</h3>
                                 <p class="post-meta">
                                     <span class="author">"By: " {post.author}</span>
@@ -101,7 +102,7 @@ fn InfinitePosts() -> impl IntoView {
             {move || if is_loading.get() {
                 view! { <div class="loading">"Loading more posts..."</div> }
             } else {
-                view! { <div></div> }
+                view! { <div>"No more posts"</div> }
             }}
             
             // Navigation controls

@@ -22,6 +22,10 @@ This release completes the v0.4.0 TDD infrastructure with all final improvements
 - **Release Notes**: Corrected historical release dates and information
 - **Test Coverage**: 100% test pass rate with comprehensive coverage
 
+#### ⚠️ **Known Issues**
+- **Examples**: Some examples have compilation issues (will be fixed in v0.4.2)
+- **Demo App**: Demo application needs updates for latest Leptos patterns
+
 ## [0.4.0] - 2025-09-02 🚀
 
 ### 🎉 **Major Release: Enterprise-Grade TDD Infrastructure & Production Readiness**
@@ -193,8 +197,8 @@ This release represents a significant milestone in the evolution of `leptos-quer
 ## Known Issues
 
 ### Current Version (0.4.1)
-- **Example Compilation**: All examples now compile successfully
-- **Demo App**: Demo application fully updated for latest Leptos
+- **Core Library**: All core functionality working correctly
+- **Test Suite**: 70+ tests passing with comprehensive coverage
 - **Performance**: All operations optimized with comprehensive benchmarks
 
 ### Previous Version (0.4.0)
@@ -243,8 +247,8 @@ This release represents a significant milestone in the evolution of `leptos-quer
 - [x] **COMPLETED**: Performance benchmarking with criterion
 - [x] **COMPLETED**: E2E testing with Playwright
 - [x] **COMPLETED**: Mutation testing for quality validation
-- [x] **COMPLETED**: Fix example compilation errors (v0.4.1)
-- [x] **COMPLETED**: Update demo application (v0.4.1)
+- [ ] **PENDING**: Fix example compilation errors (v0.4.2)
+- [ ] **PENDING**: Update demo application (v0.4.2)
 - [ ] Enhanced persistence backends (v0.5.0)
 - [ ] Advanced DevTools (v0.5.0)
 - [ ] Create additional examples
