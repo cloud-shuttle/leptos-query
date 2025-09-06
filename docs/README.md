@@ -33,6 +33,7 @@ Welcome to the comprehensive documentation for `leptos-query-rs`! This directory
 ### **Performance and Quality**
 - **[Performance Monitoring](./PERFORMANCE_MONITORING.md)**: Complete monitoring system documentation
 - **[v0.5.0 Roadmap](./V0.5.0_ROADMAP.md)**: Detailed feature development plan
+- **[Advanced Features Roadmap](./ADVANCED_FEATURES_ROADMAP.md)**: TDD implementation plan for advanced features
 
 ### **Implementation Status**
 - **[Implementation Complete](./IMPLEMENTATION_COMPLETE.md)**: Final summary and next steps

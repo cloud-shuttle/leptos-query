@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo App - Leptos Query Example</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            color: #333;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+        }
+        
+        .todo-form {
+            margin: 20px 0;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .todo-form input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+        
+        .todo-form button {
+            padding: 12px 20px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        .todo-form button:hover {
+            background: #218838;
+        }
+        
+        .todo-form button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        
+        .todo-list {
+            margin: 20px 0;
+        }
+        
+        .todo-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            margin: 8px 0;
+            background: white;
+            border: 1px solid #e1e5e9;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .todo-item.completed {
+            opacity: 0.6;
+            text-decoration: line-through;
+        }
+        
+        .todo-item input[type="checkbox"] {
+            margin-right: 12px;
+            transform: scale(1.2);
+        }
+        
+        .todo-item .todo-text {
+            flex: 1;
+            font-size: 16px;
+        }
+        
+        .todo-item .todo-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .todo-item button {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .todo-item .edit-btn {
+            background: #ffc107;
+            color: #212529;
+        }
+        
+        .todo-item .delete-btn {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .status-bar {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        
+        .loading {
+            color: #6c757d;
+            font-style: italic;
+        }
+        
+        .error {
+            color: #dc3545;
+            background: #f8d7da;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .cache-info {
+            margin: 20px 0;
+            padding: 15px;
+            background: #e7f3ff;
+            border-radius: 6px;
+            border: 1px solid #b3d9ff;
+        }
+        
+        .cache-info h4 {
+            margin: 0 0 10px 0;
+            color: #0066cc;
+        }
+        
+        .cache-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .cache-stat {
+            padding: 8px;
+            background: white;
+            border-radius: 4px;
+            text-align: center;
+        }
+        
+        .cache-stat .label {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .cache-stat .value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #0066cc;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📝 Todo App</h1>
+        <p>Real-world example using leptos-query for data fetching and caching</p>
+    </div>
+
+    <div class="todo-form">
+        <input type="text" id="todoInput" placeholder="Add a new todo..." maxlength="100">
+        <button id="addBtn">Add Todo</button>
+    </div>
+
+    <div class="status-bar" id="statusBar">
+        <div>Loading: <span id="loading">false</span></div>
+        <div>Error: <span id="error">false</span></div>
+        <div>Cache Status: <span id="cacheStatus">fresh</span></div>
+    </div>
+
+    <div class="cache-info">
+        <h4>🔄 Cache Information</h4>
+        <p>This demo shows how leptos-query handles caching, loading states, and error handling in a real application.</p>
+        <div class="cache-stats">
+            <div class="cache-stat">
+                <div class="label">Total Todos</div>
+                <div class="value" id="totalTodos">0</div>
+            </div>
+            <div class="cache-stat">
+                <div class="label">Completed</div>
+                <div class="value" id="completedTodos">0</div>
+            </div>
+            <div class="cache-stat">
+                <div class="label">Cache Hits</div>
+                <div class="value" id="cacheHits">0</div>
+            </div>
+            <div class="cache-stat">
+                <div class="label">API Calls</div>
+                <div class="value" id="apiCalls">0</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="todo-list" id="todoList">
+        <div class="loading">Loading todos...</div>
+    </div>
+
+    <script>
+        // Simulate leptos-query functionality
+        class TodoStore {
+            constructor() {
+                this.todos = [];
+                this.loading = false;
+                this.error = false;
+                this.cacheStatus = 'fresh';
+                this.cacheHits = 0;
+                this.apiCalls = 0;
+                this.listeners = [];
+            }
+
+            subscribe(listener) {
+                this.listeners.push(listener);
+                return () => {
+                    this.listeners = this.listeners.filter(l => l !== listener);
+                };
+            }
+
+            notify() {
+                this.listeners.forEach(listener => listener());
+            }
+
+            async fetchTodos() {
+                if (this.cacheStatus === 'fresh' && this.todos.length > 0) {
+                    this.cacheHits++;
+                    this.updateStats();
+                    return;
+                }
+
+                this.loading = true;
+                this.error = false;
+                this.notify();
+
+                try {
+                    // Simulate API call
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    
+                    // Simulate occasional errors
+                    if (Math.random() < 0.1) {
+                        throw new Error('Failed to fetch todos');
+                    }
+
+                    // Load from localStorage or create sample data
+                    const stored = localStorage.getItem('todos');
+                    if (stored) {
+                        this.todos = JSON.parse(stored);
+                    } else {
+                        this.todos = [
+                            { id: 1, text: 'Learn leptos-query', completed: false },
+                            { id: 2, text: 'Build a todo app', completed: true },
+                            { id: 3, text: 'Write tests', completed: false }
+                        ];
+                    }
+
+                    this.apiCalls++;
+                    this.cacheStatus = 'fresh';
+                    this.loading = false;
+                    this.notify();
+                } catch (err) {
+                    this.error = true;
+                    this.loading = false;
+                    this.notify();
+                }
+            }
+
+            async addTodo(text) {
+                if (!text.trim()) return;
+
+                this.loading = true;
+                this.notify();
+
+                try {
+                    // Simulate API call
+                    await new Promise(resolve => setTimeout(resolve, 500));
+
+                    const newTodo = {
+                        id: Date.now(),
+                        text: text.trim(),
+                        completed: false
+                    };
+
+                    this.todos.push(newTodo);
+                    this.saveTodos();
+                    this.apiCalls++;
+                    this.cacheStatus = 'stale';
+                    this.loading = false;
+                    this.notify();
+                } catch (err) {
+                    this.error = true;
+                    this.loading = false;
+                    this.notify();
+                }
+            }
+
+            async toggleTodo(id) {
+                this.loading = true;
+                this.notify();
+
+                try {
+                    // Simulate API call
+                    await new Promise(resolve => setTimeout(resolve, 300));
+
+                    const todo = this.todos.find(t => t.id === id);
+                    if (todo) {
+                        todo.completed = !todo.completed;
+                        this.saveTodos();
+                        this.apiCalls++;
+                        this.cacheStatus = 'stale';
+                    }
+
+                    this.loading = false;
+                    this.notify();
+                } catch (err) {
+                    this.error = true;
+                    this.loading = false;
+                    this.notify();
+                }
+            }
+
+            async deleteTodo(id) {
+                this.loading = true;
+                this.notify();
+
+                try {
+                    // Simulate API call
+                    await new Promise(resolve => setTimeout(resolve, 300));
+
+                    this.todos = this.todos.filter(t => t.id !== id);
+                    this.saveTodos();
+                    this.apiCalls++;
+                    this.cacheStatus = 'stale';
+                    this.loading = false;
+                    this.notify();
+                } catch (err) {
+                    this.error = true;
+                    this.loading = false;
+                    this.notify();
+                }
+            }
+
+            saveTodos() {
+                localStorage.setItem('todos', JSON.stringify(this.todos));
+            }
+
+            updateStats() {
+                document.getElementById('totalTodos').textContent = this.todos.length;
+                document.getElementById('completedTodos').textContent = this.todos.filter(t => t.completed).length;
+                document.getElementById('cacheHits').textContent = this.cacheHits;
+                document.getElementById('apiCalls').textContent = this.apiCalls;
+            }
+        }
+
+        // Initialize store
+        const store = new TodoStore();
+
+        // Update UI
+        function updateUI() {
+            // Update status
+            document.getElementById('loading').textContent = store.loading;
+            document.getElementById('error').textContent = store.error;
+            document.getElementById('cacheStatus').textContent = store.cacheStatus;
+            
+            // Update stats
+            store.updateStats();
+
+            // Update todo list
+            const todoList = document.getElementById('todoList');
+            
+            if (store.loading && store.todos.length === 0) {
+                todoList.innerHTML = '<div class="loading">Loading todos...</div>';
+                return;
+            }
+
+            if (store.error) {
+                todoList.innerHTML = '<div class="error">Error loading todos. <button onclick="store.fetchTodos()">Retry</button></div>';
+                return;
+            }
+
+            if (store.todos.length === 0) {
+                todoList.innerHTML = '<div class="loading">No todos yet. Add one above!</div>';
+                return;
+            }
+
+            todoList.innerHTML = store.todos.map(todo => `
+                <div class="todo-item ${todo.completed ? 'completed' : ''}">
+                    <input type="checkbox" ${todo.completed ? 'checked' : ''} onchange="store.toggleTodo(${todo.id})">
+                    <span class="todo-text">${todo.text}</span>
+                    <div class="todo-actions">
+                        <button class="delete-btn" onclick="store.deleteTodo(${todo.id})">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Event listeners
+        document.getElementById('addBtn').addEventListener('click', () => {
+            const input = document.getElementById('todoInput');
+            const text = input.value;
+            if (text.trim()) {
+                store.addTodo(text);
+                input.value = '';
+            }
+        });
+
+        document.getElementById('todoInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                document.getElementById('addBtn').click();
+            }
+        });
+
+        // Subscribe to store changes
+        store.subscribe(updateUI);
+
+        // Initial load
+        store.fetchTodos();
+    </script>
+</body>
+</html>

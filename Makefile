@@ -1,7 +1,7 @@
 # Leptos Query - Development Makefile
 # Supports both Nix and regular environments
 
-.PHONY: help install build test bench clean docs demo e2e wasm dev check format lint audit
+.PHONY: help install build test bench clean docs demo e2e wasm dev check format lint audit pre-commit install-pre-commit
 
 # Default target
 help:
@@ -25,6 +25,8 @@ help:
 	@echo "  format      - Format code with rustfmt"
 	@echo "  lint        - Run clippy linting"
 	@echo "  audit       - Security audit"
+	@echo "  pre-commit  - Run pre-commit hooks"
+	@echo "  install-pre-commit - Install pre-commit hooks"
 	@echo ""
 	@echo "📚 Documentation:"
 	@echo "  docs        - Build documentation"
@@ -114,6 +116,15 @@ lint:
 audit:
 	@echo "🔒 Security audit..."
 	cargo audit
+
+# Pre-commit hooks
+install-pre-commit:
+	@echo "🔧 Installing pre-commit hooks..."
+	./scripts/install-pre-commit.sh
+
+pre-commit:
+	@echo "🔍 Running pre-commit hooks..."
+	pre-commit run --all-files
 
 # Documentation commands
 docs:

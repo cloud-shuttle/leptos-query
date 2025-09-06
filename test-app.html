@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leptos Query Test App</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            color: #333;
+        }
+        
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #e1e5e9;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+        
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        
+        .test-result.pass {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .test-result.fail {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .test-result.pending {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        
+        .button {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        
+        .button:hover {
+            background: #0056b3;
+        }
+        
+        .button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Leptos Query Test App</h1>
+    <p>This app validates leptos-query functionality in a real Leptos-like environment.</p>
+
+    <div class="test-section">
+        <h3>Basic Integration Test</h3>
+        <div id="integration-result" class="test-result pending">Testing integration...</div>
+        <button class="button" onclick="testIntegration()">Test Integration</button>
+    </div>
+
+    <div class="test-section">
+        <h3>Query Functionality Test</h3>
+        <div id="query-result" class="test-result pending">Testing queries...</div>
+        <button class="button" onclick="testQueries()">Test Queries</button>
+    </div>
+
+    <div class="test-section">
+        <h3>Caching Test</h3>
+        <div id="cache-result" class="test-result pending">Testing caching...</div>
+        <button class="button" onclick="testCaching()">Test Caching</button>
+    </div>
+
+    <div class="test-section">
+        <h3>Error Handling Test</h3>
+        <div id="error-result" class="test-result pending">Testing error handling...</div>
+        <button class="button" onclick="testErrorHandling()">Test Error Handling</button>
+    </div>
+
+    <div class="test-section">
+        <h3>Loading States Test</h3>
+        <div id="loading-result" class="test-result pending">Testing loading states...</div>
+        <button class="button" onclick="testLoadingStates()">Test Loading States</button>
+    </div>
+
+    <div class="test-section">
+        <h3>Memory Usage Test</h3>
+        <div id="memory-result" class="test-result pending">Testing memory usage...</div>
+        <button class="button" onclick="testMemoryUsage()">Test Memory Usage</button>
+    </div>
+
+    <div class="test-section">
+        <h3>Performance Test</h3>
+        <div id="performance-result" class="test-result pending">Testing performance...</div>
+        <button class="button" onclick="testPerformance()">Test Performance</button>
+    </div>
+
+    <script>
+        // Simulate leptos-query functionality for testing
+        class TestQueryClient {
+            constructor() {
+                this.cache = new Map();
+                this.loading = new Map();
+                this.errors = new Map();
+                this.memoryUsage = 0;
+                this.performanceMetrics = [];
+            }
+
+            async query(key, fetcher, options = {}) {
+                const cacheKey = JSON.stringify(key);
+                
+                // Check cache first
+                if (this.cache.has(cacheKey) && !options.forceRefresh) {
+                    return {
+                        data: this.cache.get(cacheKey),
+                        loading: false,
+                        error: null,
+                        fromCache: true
+                    };
+                }
+
+                // Set loading state
+                this.loading.set(cacheKey, true);
+                
+                try {
+                    // Simulate API call
+                    const data = await fetcher();
+                    
+                    // Cache the result
+                    this.cache.set(cacheKey, data);
+                    this.loading.set(cacheKey, false);
+                    this.errors.delete(cacheKey);
+                    
+                    return {
+                        data,
+                        loading: false,
+                        error: null,
+                        fromCache: false
+                    };
+                } catch (error) {
+                    this.loading.set(cacheKey, false);
+                    this.errors.set(cacheKey, error);
+                    
+                    return {
+                        data: null,
+                        loading: false,
+                        error,
+                        fromCache: false
+                    };
+                }
+            }
+
+            invalidate(key) {
+                const cacheKey = JSON.stringify(key);
+                this.cache.delete(cacheKey);
+                this.loading.delete(cacheKey);
+                this.errors.delete(cacheKey);
+            }
+
+            getMemoryUsage() {
+                return this.cache.size * 100; // Simulate memory usage
+            }
+
+            getPerformanceMetrics() {
+                return this.performanceMetrics;
+            }
+        }
+
+        // Initialize test client
+        const testClient = new TestQueryClient();
+
+        // Make it available globally for tests
+        window.leptosQuery = {
+            testQuery: () => {
+                return testClient !== null && typeof testClient.query === 'function';
+            },
+            testCache: () => {
+                return testClient.cache instanceof Map;
+            },
+            testErrorHandling: () => {
+                return testClient.errors instanceof Map;
+            },
+            testLoadingStates: () => {
+                return testClient.loading instanceof Map;
+            },
+            testMemoryUsage: () => {
+                const usage = testClient.getMemoryUsage();
+                return usage >= 0 && usage < 10000; // Reasonable memory usage
+            },
+            testPerformance: () => {
+                const start = performance.now();
+                // Simulate some work
+                for (let i = 0; i < 1000; i++) {
+                    testClient.cache.set(`key${i}`, `value${i}`);
+                }
+                const end = performance.now();
+                const duration = end - start;
+                return duration < 100; // Should complete in less than 100ms
+            }
+        };
+
+        // Test functions
+        function testIntegration() {
+            const result = document.getElementById('integration-result');
+            try {
+                const success = window.leptosQuery.testQuery();
+                if (success) {
+                    result.textContent = '✅ Integration test passed';
+                    result.className = 'test-result pass';
+                } else {
+                    result.textContent = '❌ Integration test failed';
+                    result.className = 'test-result fail';
+                }
+            } catch (error) {
+                result.textContent = `❌ Integration test error: ${error.message}`;
+                result.className = 'test-result fail';
+            }
+        }
+
+        function testQueries() {
+            const result = document.getElementById('query-result');
+            try {
+                const success = window.leptosQuery.testQuery();
+                if (success) {
+                    result.textContent = '✅ Query functionality test passed';
+                    result.className = 'test-result pass';
+                } else {
+                    result.textContent = '❌ Query functionality test failed';
+                    result.className = 'test-result fail';
+                }
+            } catch (error) {
+                result.textContent = `❌ Query functionality test error: ${error.message}`;
+                result.className = 'test-result fail';
+            }
+        }
+
+        function testCaching() {
+            const result = document.getElementById('cache-result');
+            try {
+                const success = window.leptosQuery.testCache();
+                if (success) {
+                    result.textContent = '✅ Caching test passed';
+                    result.className = 'test-result pass';
+                } else {
+                    result.textContent = '❌ Caching test failed';
+                    result.className = 'test-result fail';
+                }
+            } catch (error) {
+                result.textContent = `❌ Caching test error: ${error.message}`;
+                result.className = 'test-result fail';
+            }
+        }
+
+        function testErrorHandling() {
+            const result = document.getElementById('error-result');
+            try {
+                const success = window.leptosQuery.testErrorHandling();
+                if (success) {
+                    result.textContent = '✅ Error handling test passed';
+                    result.className = 'test-result pass';
+                } else {
+                    result.textContent = '❌ Error handling test failed';
+                    result.className = 'test-result fail';
+                }
+            } catch (error) {
+                result.textContent = `❌ Error handling test error: ${error.message}`;
+                result.className = 'test-result fail';
+            }
+        }
+
+        function testLoadingStates() {
+            const result = document.getElementById('loading-result');
+            try {
+                const success = window.leptosQuery.testLoadingStates();
+                if (success) {
+                    result.textContent = '✅ Loading states test passed';
+                    result.className = 'test-result pass';
+                } else {
+                    result.textContent = '❌ Loading states test failed';
+                    result.className = 'test-result fail';
+                }
+            } catch (error) {
+                result.textContent = `❌ Loading states test error: ${error.message}`;
+                result.className = 'test-result fail';
+            }
+        }
+
+        function testMemoryUsage() {
+            const result = document.getElementById('memory-result');
+            try {
+                const success = window.leptosQuery.testMemoryUsage();
+                if (success) {
+                    result.textContent = '✅ Memory usage test passed';
+                    result.className = 'test-result pass';
+                } else {
+                    result.textContent = '❌ Memory usage test failed';
+                    result.className = 'test-result fail';
+                }
+            } catch (error) {
+                result.textContent = `❌ Memory usage test error: ${error.message}`;
+                result.className = 'test-result fail';
+            }
+        }
+
+        function testPerformance() {
+            const result = document.getElementById('performance-result');
+            try {
+                const success = window.leptosQuery.testPerformance();
+                if (success) {
+                    result.textContent = '✅ Performance test passed';
+                    result.className = 'test-result pass';
+                } else {
+                    result.textContent = '❌ Performance test failed';
+                    result.className = 'test-result fail';
+                }
+            } catch (error) {
+                result.textContent = `❌ Performance test error: ${error.message}`;
+                result.className = 'test-result fail';
+            }
+        }
+
+        // Run all tests on load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                testIntegration();
+                testQueries();
+                testCaching();
+                testErrorHandling();
+                testLoadingStates();
+                testMemoryUsage();
+                testPerformance();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

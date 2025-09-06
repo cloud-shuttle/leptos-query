@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App - Leptos Query Example</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            color: #333;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #87CEEB 0%, #4682B4 100%);
+            color: white;
+            border-radius: 10px;
+        }
+        
+        .search-form {
+            margin: 20px 0;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .search-form input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+        
+        .search-form button {
+            padding: 12px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        .search-form button:hover {
+            background: #0056b3;
+        }
+        
+        .search-form button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        
+        .weather-card {
+            margin: 20px 0;
+            padding: 20px;
+            background: white;
+            border: 1px solid #e1e5e9;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .weather-card h2 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        
+        .weather-card .location {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 15px;
+        }
+        
+        .weather-main {
+            display: flex;
+            align-items: center;
+            margin: 20px 0;
+        }
+        
+        .weather-main .temperature {
+            font-size: 48px;
+            font-weight: bold;
+            color: #007bff;
+            margin-right: 20px;
+        }
+        
+        .weather-main .description {
+            font-size: 18px;
+            color: #333;
+        }
+        
+        .weather-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .weather-detail {
+            text-align: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+        
+        .weather-detail .label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .weather-detail .value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .forecast {
+            margin: 20px 0;
+        }
+        
+        .forecast h3 {
+            margin: 0 0 15px 0;
+        }
+        
+        .forecast-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            margin: 5px 0;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        
+        .forecast-item .day {
+            font-weight: bold;
+        }
+        
+        .forecast-item .temp {
+            color: #007bff;
+        }
+        
+        .status-bar {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        
+        .loading {
+            color: #6c757d;
+            font-style: italic;
+        }
+        
+        .error {
+            color: #dc3545;
+            background: #f8d7da;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .cache-info {
+            margin: 20px 0;
+            padding: 15px;
+            background: #e7f3ff;
+            border-radius: 6px;
+            border: 1px solid #b3d9ff;
+        }
+        
+        .cache-info h4 {
+            margin: 0 0 10px 0;
+            color: #0066cc;
+        }
+        
+        .cache-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .cache-stat {
+            padding: 8px;
+            background: white;
+            border-radius: 4px;
+            text-align: center;
+        }
+        
+        .cache-stat .label {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .cache-stat .value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #0066cc;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🌤️ Weather App</h1>
+        <p>Real-world example using leptos-query for weather data fetching</p>
+    </div>
+
+    <div class="search-form">
+        <input type="text" id="cityInput" placeholder="Enter city name..." value="London">
+        <button id="searchBtn">Get Weather</button>
+    </div>
+
+    <div class="status-bar" id="statusBar">
+        <div>Loading: <span id="loading">false</span></div>
+        <div>Error: <span id="error">false</span></div>
+        <div>Cache Status: <span id="cacheStatus">fresh</span></div>
+    </div>
+
+    <div class="cache-info">
+        <h4>🔄 Cache Information</h4>
+        <p>This demo shows how leptos-query handles caching, loading states, and error handling in a weather application.</p>
+        <div class="cache-stats">
+            <div class="cache-stat">
+                <div class="label">Current City</div>
+                <div class="value" id="currentCity">-</div>
+            </div>
+            <div class="cache-stat">
+                <div class="label">Cache Hits</div>
+                <div class="value" id="cacheHits">0</div>
+            </div>
+            <div class="cache-stat">
+                <div class="label">API Calls</div>
+                <div class="value" id="apiCalls">0</div>
+            </div>
+            <div class="cache-stat">
+                <div class="label">Last Updated</div>
+                <div class="value" id="lastUpdated">-</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="weatherContent">
+        <div class="loading">Enter a city name and click "Get Weather" to see the forecast</div>
+    </div>
+
+    <script>
+        // Simulate leptos-query functionality for weather
+        class WeatherStore {
+            constructor() {
+                this.weather = null;
+                this.forecast = [];
+                this.currentCity = '';
+                this.loading = false;
+                this.error = false;
+                this.cacheStatus = 'fresh';
+                this.cacheHits = 0;
+                this.apiCalls = 0;
+                this.lastUpdated = null;
+                this.listeners = [];
+            }
+
+            subscribe(listener) {
+                this.listeners.push(listener);
+                return () => {
+                    this.listeners = this.listeners.filter(l => l !== listener);
+                };
+            }
+
+            notify() {
+                this.listeners.forEach(listener => listener());
+            }
+
+            async fetchWeather(city) {
+                if (!city.trim()) return;
+
+                const cityKey = city.toLowerCase().trim();
+                
+                // Check cache
+                if (this.cacheStatus === 'fresh' && this.currentCity === cityKey && this.weather) {
+                    this.cacheHits++;
+                    this.updateStats();
+                    return;
+                }
+
+                this.loading = true;
+                this.error = false;
+                this.notify();
+
+                try {
+                    // Simulate API call
+                    await new Promise(resolve => setTimeout(resolve, 1500));
+                    
+                    // Simulate occasional errors
+                    if (Math.random() < 0.1) {
+                        throw new Error('Failed to fetch weather data');
+                    }
+
+                    // Simulate weather data
+                    const weatherData = this.generateWeatherData(city);
+                    
+                    this.weather = weatherData.current;
+                    this.forecast = weatherData.forecast;
+                    this.currentCity = cityKey;
+                    this.apiCalls++;
+                    this.cacheStatus = 'fresh';
+                    this.lastUpdated = new Date().toLocaleTimeString();
+                    this.loading = false;
+                    this.notify();
+                } catch (err) {
+                    this.error = true;
+                    this.loading = false;
+                    this.notify();
+                }
+            }
+
+            generateWeatherData(city) {
+                const conditions = ['Sunny', 'Cloudy', 'Rainy', 'Partly Cloudy', 'Overcast'];
+                const condition = conditions[Math.floor(Math.random() * conditions.length)];
+                const temp = Math.floor(Math.random() * 30) + 5; // 5-35°C
+                const humidity = Math.floor(Math.random() * 40) + 40; // 40-80%
+                const windSpeed = Math.floor(Math.random() * 20) + 5; // 5-25 km/h
+                const pressure = Math.floor(Math.random() * 50) + 1000; // 1000-1050 hPa
+
+                const current = {
+                    temperature: temp,
+                    condition: condition,
+                    humidity: humidity,
+                    windSpeed: windSpeed,
+                    pressure: pressure,
+                    feelsLike: temp + Math.floor(Math.random() * 6) - 3
+                };
+
+                const forecast = [];
+                for (let i = 1; i <= 5; i++) {
+                    const dayTemp = temp + Math.floor(Math.random() * 10) - 5;
+                    const nightTemp = dayTemp - Math.floor(Math.random() * 8) - 2;
+                    forecast.push({
+                        day: new Date(Date.now() + i * 86400000).toLocaleDateString('en', { weekday: 'short' }),
+                        high: dayTemp,
+                        low: nightTemp,
+                        condition: conditions[Math.floor(Math.random() * conditions.length)]
+                    });
+                }
+
+                return { current, forecast };
+            }
+
+            updateStats() {
+                document.getElementById('currentCity').textContent = this.currentCity || '-';
+                document.getElementById('cacheHits').textContent = this.cacheHits;
+                document.getElementById('apiCalls').textContent = this.apiCalls;
+                document.getElementById('lastUpdated').textContent = this.lastUpdated || '-';
+            }
+        }
+
+        // Initialize store
+        const store = new WeatherStore();
+
+        // Update UI
+        function updateUI() {
+            // Update status
+            document.getElementById('loading').textContent = store.loading;
+            document.getElementById('error').textContent = store.error;
+            document.getElementById('cacheStatus').textContent = store.cacheStatus;
+            
+            // Update stats
+            store.updateStats();
+
+            // Update weather content
+            const weatherContent = document.getElementById('weatherContent');
+            
+            if (store.loading && !store.weather) {
+                weatherContent.innerHTML = '<div class="loading">Loading weather data...</div>';
+                return;
+            }
+
+            if (store.error) {
+                weatherContent.innerHTML = '<div class="error">Error loading weather data. <button onclick="store.fetchWeather(document.getElementById(\'cityInput\').value)">Retry</button></div>';
+                return;
+            }
+
+            if (!store.weather) {
+                weatherContent.innerHTML = '<div class="loading">Enter a city name and click "Get Weather" to see the forecast</div>';
+                return;
+            }
+
+            weatherContent.innerHTML = `
+                <div class="weather-card">
+                    <h2>${store.weather.condition}</h2>
+                    <div class="location">${store.currentCity}</div>
+                    
+                    <div class="weather-main">
+                        <div class="temperature">${store.weather.temperature}°C</div>
+                        <div class="description">${store.weather.condition}</div>
+                    </div>
+                    
+                    <div class="weather-details">
+                        <div class="weather-detail">
+                            <div class="label">Feels Like</div>
+                            <div class="value">${store.weather.feelsLike}°C</div>
+                        </div>
+                        <div class="weather-detail">
+                            <div class="label">Humidity</div>
+                            <div class="value">${store.weather.humidity}%</div>
+                        </div>
+                        <div class="weather-detail">
+                            <div class="label">Wind Speed</div>
+                            <div class="value">${store.weather.windSpeed} km/h</div>
+                        </div>
+                        <div class="weather-detail">
+                            <div class="label">Pressure</div>
+                            <div class="value">${store.weather.pressure} hPa</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="forecast">
+                    <h3>5-Day Forecast</h3>
+                    ${store.forecast.map(day => `
+                        <div class="forecast-item">
+                            <span class="day">${day.day}</span>
+                            <span class="condition">${day.condition}</span>
+                            <span class="temp">${day.high}°/${day.low}°</span>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        // Event listeners
+        document.getElementById('searchBtn').addEventListener('click', () => {
+            const city = document.getElementById('cityInput').value;
+            store.fetchWeather(city);
+        });
+
+        document.getElementById('cityInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                document.getElementById('searchBtn').click();
+            }
+        });
+
+        // Subscribe to store changes
+        store.subscribe(updateUI);
+
+        // Initial load
+        store.fetchWeather('London');
+    </script>
+</body>
+</html>

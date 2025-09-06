@@ -69,7 +69,7 @@ async fn create_post(post: CreatePostRequest) -> Result<Post, QueryError> {
     gloo_timers::future::sleep(Duration::from_millis(500)).await;
     
     Ok(Post {
-        id: post.author_id * 100 + rand::random::<u32>() % 100,
+        id: post.author_id * 100 + (post.author_id * 7) % 100,
         title: post.title,
         content: post.content,
         author_id: post.author_id,

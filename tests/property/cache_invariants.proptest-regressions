@@ -6,3 +6,4 @@
 # everyone who runs the test benefits from these saved cases.
 cc 4e59816d3b3aa92f8b17f430ef19a357fc55aef6b60d18e62ea8b2b78c1b3228 # shrinks to base_delay = 1492s, max_delay = 0ns, attempt = 0
 cc 6fe81c2b0445ea7cdcb7a47edabc884bf514d0a78318e659fd9fae743593dae9 # shrinks to stale_time = 1066s, age = 1066s
+cc 6918cbda4860a74869a1906ed1c4c5400e666057214eeca81ef3861117d34a99 # shrinks to data = TestData { id: 0, value: "", metadata: None }, stale_time = 0ns, cache_time = 0ns

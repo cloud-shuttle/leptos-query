@@ -17,8 +17,8 @@
 //! ## Quick Start
 //!
 //! ```rust
-//! use leptos::*;
-//! use leptos_query::*;
+//! use leptos::prelude::*;
+//! use leptos_query_rs::*;
 //! use serde::{Deserialize, Serialize};
 //!
 //! #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -40,17 +40,21 @@
 //! #[component]
 //! fn UserProfile(user_id: u32) -> impl IntoView {
 //!     let user_query = use_query(
-//!         move || QueryKey::from(["user", user_id.to_string()]),
-//!         move || fetch_user(user_id),
+//!         move || QueryKey::new(&["user", &user_id.to_string()]),
+//!         move || async move { fetch_user(user_id).await },
 //!         QueryOptions::default(),
 //!     );
 //!
 //!     view! {
 //!         <div>
-//!             {move || match user_query.data.get() {
-//!                 Some(user) => view! { <div>"User: " {user.name}</div> },
-//!                 None if user_query.is_loading.get() => view! { <div>"Loading..."</div> },
-//!                 None => view! { <div>"No user found"</div> },
+//!             {move || {
+//!                 if let Some(user) = user_query.data.get() {
+//!                     format!("User: {}", user.name)
+//!                 } else if user_query.is_loading.get() {
+//!                     "Loading...".to_string()
+//!                 } else {
+//!                     "No user found".to_string()
+//!                 }
 //!             }}
 //!         </div>
 //!     }
@@ -71,7 +75,7 @@ pub mod optimistic;
 pub mod devtools;
 
 // Re-export main types and functions
-pub use client::QueryClient;
+pub use client::{QueryClient, SerializedData, CacheEntry};
 pub use query::{use_query, QueryOptions, QueryResult};
 pub use mutation::{use_mutation, MutationOptions, MutationResult};
 pub use retry::{QueryError, RetryConfig, execute_with_retry};

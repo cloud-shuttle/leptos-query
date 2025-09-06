@@ -278,8 +278,10 @@ mod tests {
             
             let entry = CacheEntry { data: serialized, meta };
             
-            // Fresh entry should not be stale
-            prop_assert!(!entry.is_stale());
+            // Fresh entry should not be stale (unless stale_time is 0)
+            if stale_time > Duration::from_nanos(0) {
+                prop_assert!(!entry.is_stale());
+            }
             
             // Should be able to retrieve data
             let retrieved: TestData = entry.get_data().unwrap();

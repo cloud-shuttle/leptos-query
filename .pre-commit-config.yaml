@@ -1,0 +1,133 @@
+# Pre-commit hooks configuration for leptos-query
+# See https://pre-commit.com for more information
+
+repos:
+  # Rust formatting and linting
+  - repo: https://github.com/doublify/pre-commit-rust
+    rev: v1.0
+    hooks:
+      - id: fmt
+        name: rustfmt
+        description: Format Rust code
+        entry: cargo fmt --all --
+        language: system
+        types: [rust]
+        args: [--manifest-path, Cargo.toml]
+        
+      - id: clippy
+        name: clippy
+        description: Lint Rust code
+        entry: cargo clippy --all-targets --all-features --
+        language: system
+        types: [rust]
+        args: [--manifest-path, Cargo.toml, --, -D, warnings]
+        
+      - id: cargo-check
+        name: cargo check
+        description: Check Rust code compiles
+        entry: cargo check --all-targets --all-features
+        language: system
+        types: [rust]
+        args: [--manifest-path, Cargo.toml]
+        
+      - id: cargo-test
+        name: cargo test
+        description: Run Rust tests
+        entry: cargo test --quiet
+        language: system
+        types: [rust]
+        args: [--manifest-path, Cargo.toml]
+        
+      - id: cargo-audit
+        name: cargo audit
+        description: Security audit
+        entry: cargo audit
+        language: system
+        types: [rust]
+        args: [--manifest-path, Cargo.toml]
+
+  # General file checks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: trailing-whitespace
+        name: Trim Trailing Whitespace
+        description: Remove trailing whitespace
+        types: [text]
+        
+      - id: end-of-file-fixer
+        name: Fix End of Files
+        description: Ensure files end with newline
+        types: [text]
+        
+      - id: check-yaml
+        name: Check YAML
+        description: Check YAML syntax
+        types: [yaml]
+        
+      - id: check-json
+        name: Check JSON
+        description: Check JSON syntax
+        types: [json]
+        
+      - id: check-toml
+        name: Check TOML
+        description: Check TOML syntax
+        types: [toml]
+        
+      - id: check-merge-conflict
+        name: Check for merge conflicts
+        description: Check for merge conflict markers
+        types: [text]
+        
+      - id: check-added-large-files
+        name: Check for large files
+        description: Prevent large files from being committed
+        args: ['--maxkb=1000']
+        
+      - id: check-case-conflict
+        name: Check for case conflicts
+        description: Check for case conflicts in filenames
+        
+      - id: check-merge-conflict
+        name: Check for merge conflicts
+        description: Check for merge conflict markers
+        
+      - id: mixed-line-ending
+        name: Mixed Line Ending
+        description: Ensure consistent line endings
+        args: ['--fix=lf']
+
+  # Markdown formatting
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.37.0
+    hooks:
+      - id: markdownlint
+        name: Markdown Lint
+        description: Lint markdown files
+        types: [markdown]
+        args: ['--fix']
+
+  # YAML formatting
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v3.0.3
+    hooks:
+      - id: prettier
+        name: Prettier
+        description: Format YAML files
+        types: [yaml]
+        args: ['--tab-width', '2']
+
+  # Security checks
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.4.0
+    hooks:
+      - id: detect-secrets
+        name: Detect Secrets
+        description: Detect secrets in code
+        args: ['--baseline', '.secrets.baseline']
+
+# Configuration
+default_stages: [commit]
+fail_fast: false
+minimum_pre_commit_version: '2.0.0'

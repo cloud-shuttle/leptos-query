@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog App - Leptos Query Example</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            color: #333;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+        }
+        
+        .post-form {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .post-form h3 {
+            margin-top: 0;
+        }
+        
+        .form-group {
+            margin: 15px 0;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+        
+        .form-group textarea {
+            height: 100px;
+            resize: vertical;
+        }
+        
+        .form-group button {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .form-group button:hover {
+            background: #0056b3;
+        }
+        
+        .form-group button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        
+        .posts-list {
+            margin: 20px 0;
+        }
+        
+        .post-item {
+            margin: 20px 0;
+            padding: 20px;
+            background: white;
+            border: 1px solid #e1e5e9;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .post-item h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        
+        .post-item .post-meta {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        
+        .post-item .post-content {
+            margin: 15px 0;
+            line-height: 1.6;
+        }
+        
+        .post-item .post-actions {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .post-item button {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .post-item .edit-btn {
+            background: #ffc107;
+            color: #212529;
+        }
+        
+        .post-item .delete-btn {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .status-bar {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        
+        .loading {
+            color: #6c757d;
+            font-style: italic;
+        }
+        
+        .error {
+            color: #dc3545;
+            background: #f8d7da;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .cache-info {
+            margin: 20px 0;
+            padding: 15px;
+            background: #e7f3ff;
+            border-radius: 6px;
+            border: 1px solid #b3d9ff;
+        }
+        
+        .cache-info h4 {
+            margin: 0 0 10px 0;
+            color: #0066cc;
+        }
+        
+        .cache-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .cache-stat {
+            padding: 8px;
+            background: white;
+            border-radius: 4px;
+            text-align: center;
+        }
+        
+        .cache-stat .label {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .cache-stat .value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #0066cc;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📝 Blog App</h1>
+        <p>Real-world example using leptos-query for blog post management</p>
+    </div>
+
+    <div class="post-form">
+        <h3>Create New Post</h3>
+        <div class="form-group">
+            <label for="postTitle">Title:</label>
+            <input type="text" id="postTitle" placeholder="Enter post title..." maxlength="100">
+        </div>
+        <div class="form-group">
+            <label for="postContent">Content:</label>
+            <textarea id="postContent" placeholder="Enter post content..."></textarea>
+        </div>
+        <div class="form-group">
+            <button id="createBtn">Create Post</button>
+        </div>
+    </div>
+
+    <div class="status-bar" id="statusBar">
+        <div>Loading: <span id="loading">false</span></div>
+        <div>Error: <span id="error">false</span></div>
+        <div>Cache Status: <span id="cacheStatus">fresh</span></div>
+    </div>
+
+    <div class="cache-info">
+        <h4>🔄 Cache Information</h4>
+        <p>This demo shows how leptos-query handles caching, loading states, and error handling in a blog application.</p>
+        <div class="cache-stats">
+            <div class="cache-stat">
+                <div class="label">Total Posts</div>
+                <div class="value" id="totalPosts">0</div>
+            </div>
+            <div class="cache-stat">
+                <div class="label">Cache Hits</div>
+                <div class="value" id="cacheHits">0</div>
+            </div>
+            <div class="cache-stat">
+                <div class="label">API Calls</div>
+                <div class="value" id="apiCalls">0</div>
+            </div>
+            <div class="cache-stat">
+                <div class="label">Last Updated</div>
+                <div class="value" id="lastUpdated">-</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="posts-list" id="postsList">
+        <div class="loading">Loading posts...</div>
+    </div>
+
+    <script>
+        // Simulate leptos-query functionality for blog
+        class BlogStore {
+            constructor() {
+                this.posts = [];
+                this.loading = false;
+                this.error = false;
+                this.cacheStatus = 'fresh';
+                this.cacheHits = 0;
+                this.apiCalls = 0;
+                this.lastUpdated = null;
+                this.listeners = [];
+            }
+
+            subscribe(listener) {
+                this.listeners.push(listener);
+                return () => {
+                    this.listeners = this.listeners.filter(l => l !== listener);
+                };
+            }
+
+            notify() {
+                this.listeners.forEach(listener => listener());
+            }
+
+            async fetchPosts() {
+                if (this.cacheStatus === 'fresh' && this.posts.length > 0) {
+                    this.cacheHits++;
+                    this.updateStats();
+                    return;
+                }
+
+                this.loading = true;
+                this.error = false;
+                this.notify();
+
+                try {
+                    // Simulate API call
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    
+                    // Simulate occasional errors
+                    if (Math.random() < 0.1) {
+                        throw new Error('Failed to fetch posts');
+                    }
+
+                    // Load from localStorage or create sample data
+                    const stored = localStorage.getItem('blogPosts');
+                    if (stored) {
+                        this.posts = JSON.parse(stored);
+                    } else {
+                        this.posts = [
+                            {
+                                id: 1,
+                                title: 'Getting Started with Leptos Query',
+                                content: 'Leptos Query is a powerful data fetching library for Leptos applications. It provides automatic caching, background updates, and error handling.',
+                                createdAt: new Date(Date.now() - 86400000).toISOString()
+                            },
+                            {
+                                id: 2,
+                                title: 'Building Real-World Applications',
+                                content: 'In this post, we explore how to build real-world applications using Leptos Query. We cover caching strategies, error handling, and performance optimization.',
+                                createdAt: new Date(Date.now() - 172800000).toISOString()
+                            }
+                        ];
+                    }
+
+                    this.apiCalls++;
+                    this.cacheStatus = 'fresh';
+                    this.lastUpdated = new Date().toLocaleTimeString();
+                    this.loading = false;
+                    this.notify();
+                } catch (err) {
+                    this.error = true;
+                    this.loading = false;
+                    this.notify();
+                }
+            }
+
+            async createPost(title, content) {
+                if (!title.trim() || !content.trim()) return;
+
+                this.loading = true;
+                this.notify();
+
+                try {
+                    // Simulate API call
+                    await new Promise(resolve => setTimeout(resolve, 800));
+
+                    const newPost = {
+                        id: Date.now(),
+                        title: title.trim(),
+                        content: content.trim(),
+                        createdAt: new Date().toISOString()
+                    };
+
+                    this.posts.unshift(newPost); // Add to beginning
+                    this.savePosts();
+                    this.apiCalls++;
+                    this.cacheStatus = 'stale';
+                    this.lastUpdated = new Date().toLocaleTimeString();
+                    this.loading = false;
+                    this.notify();
+                } catch (err) {
+                    this.error = true;
+                    this.loading = false;
+                    this.notify();
+                }
+            }
+
+            async deletePost(id) {
+                this.loading = true;
+                this.notify();
+
+                try {
+                    // Simulate API call
+                    await new Promise(resolve => setTimeout(resolve, 500));
+
+                    this.posts = this.posts.filter(p => p.id !== id);
+                    this.savePosts();
+                    this.apiCalls++;
+                    this.cacheStatus = 'stale';
+                    this.lastUpdated = new Date().toLocaleTimeString();
+                    this.loading = false;
+                    this.notify();
+                } catch (err) {
+                    this.error = true;
+                    this.loading = false;
+                    this.notify();
+                }
+            }
+
+            savePosts() {
+                localStorage.setItem('blogPosts', JSON.stringify(this.posts));
+            }
+
+            updateStats() {
+                document.getElementById('totalPosts').textContent = this.posts.length;
+                document.getElementById('cacheHits').textContent = this.cacheHits;
+                document.getElementById('apiCalls').textContent = this.apiCalls;
+                document.getElementById('lastUpdated').textContent = this.lastUpdated || '-';
+            }
+        }
+
+        // Initialize store
+        const store = new BlogStore();
+
+        // Update UI
+        function updateUI() {
+            // Update status
+            document.getElementById('loading').textContent = store.loading;
+            document.getElementById('error').textContent = store.error;
+            document.getElementById('cacheStatus').textContent = store.cacheStatus;
+            
+            // Update stats
+            store.updateStats();
+
+            // Update posts list
+            const postsList = document.getElementById('postsList');
+            
+            if (store.loading && store.posts.length === 0) {
+                postsList.innerHTML = '<div class="loading">Loading posts...</div>';
+                return;
+            }
+
+            if (store.error) {
+                postsList.innerHTML = '<div class="error">Error loading posts. <button onclick="store.fetchPosts()">Retry</button></div>';
+                return;
+            }
+
+            if (store.posts.length === 0) {
+                postsList.innerHTML = '<div class="loading">No posts yet. Create one above!</div>';
+                return;
+            }
+
+            postsList.innerHTML = store.posts.map(post => `
+                <div class="post-item">
+                    <h3>${post.title}</h3>
+                    <div class="post-meta">Created: ${new Date(post.createdAt).toLocaleString()}</div>
+                    <div class="post-content">${post.content}</div>
+                    <div class="post-actions">
+                        <button class="delete-btn" onclick="store.deletePost(${post.id})">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Event listeners
+        document.getElementById('createBtn').addEventListener('click', () => {
+            const title = document.getElementById('postTitle').value;
+            const content = document.getElementById('postContent').value;
+            
+            if (title.trim() && content.trim()) {
+                store.createPost(title, content);
+                document.getElementById('postTitle').value = '';
+                document.getElementById('postContent').value = '';
+            }
+        });
+
+        // Subscribe to store changes
+        store.subscribe(updateUI);
+
+        // Initial load
+        store.fetchPosts();
+    </script>
+</body>
+</html>
