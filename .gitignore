@@ -38,13 +38,26 @@ Thumbs.db
 demo/target/
 demo/dist/
 
-# Node.js and npm
+# Node.js package managers
 node_modules/
+.npm/
+.yarn/
+.pnpm-store/
+
+# npm specific
 npm-debug.log*
+package-lock.json
+
+# yarn specific  
 yarn-debug.log*
 yarn-error.log*
-package-lock.json
-pnpm-lock.yaml
+.yarn/cache/
+.yarn/unplugged/
+.yarn/build-state.yml
+.yarn/install-state.gz
+
+# pnpm specific (keep pnpm-lock.yaml)
+.pnpm-debug.log*
 
 # Playwright
 test-results/
