@@ -1,6 +1,7 @@
 [build]
 target = "index.html"
 dist = "dist"
+bin = "simple_demo"
 
 [watch]
 watch = ["src", "../src"]

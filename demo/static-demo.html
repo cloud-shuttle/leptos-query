@@ -3,1008 +3,264 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Leptos Query Demo - Interactive Showcase</title>
+    <title>Leptos Query Demo</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            background-color: #f5f5f5;
-        }
-
-        .app {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .app-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 2rem;
-            text-align: center;
-        }
-
-        .app-header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 0.5rem;
-            font-weight: 700;
-        }
-
-        .app-header p {
-            font-size: 1.1rem;
-            opacity: 0.9;
-        }
-
-        .app-main {
-            flex: 1;
-            padding: 2rem;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             max-width: 800px;
             margin: 0 auto;
-            width: 100%;
-        }
-
-        .app-footer {
-            background: #333;
-            color: white;
-            text-align: center;
-            padding: 1rem;
-            margin-top: auto;
-        }
-
-        .app-footer a {
-            color: #667eea;
-            text-decoration: none;
-        }
-
-        .app-footer a:hover {
-            text-decoration: underline;
-        }
-
-        .demo-section {
-            background: white;
-            border-radius: 12px;
-            padding: 2rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            margin-bottom: 2rem;
-        }
-
-        .demo-section h2 {
+            padding: 20px;
+            line-height: 1.6;
             color: #333;
-            margin-bottom: 1.5rem;
-            font-size: 1.8rem;
         }
-
-        .demo-section h3 {
-            color: #555;
-            margin: 1.5rem 0 1rem 0;
-            font-size: 1.3rem;
-        }
-
-        .controls {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin-bottom: 2rem;
-            padding: 1rem;
-            background: #f8f9fa;
-            border-radius: 8px;
-        }
-
-        .controls label {
-            font-weight: 600;
-            color: #555;
-        }
-
-        .controls input {
-            padding: 0.5rem 1rem;
-            border: 2px solid #ddd;
-            border-radius: 6px;
-            font-size: 1rem;
-            width: 120px;
-        }
-
-        .controls input:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-
-        .query-status {
-            background: #f8f9fa;
-            padding: 1.5rem;
-            border-radius: 8px;
-            margin-bottom: 2rem;
-        }
-
-        .query-status p {
-            margin: 0.5rem 0;
-            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-            font-size: 0.9rem;
-        }
-
-        .user-data {
-            margin-bottom: 2rem;
-        }
-
-        .user-card {
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 1.5rem;
+            border-radius: 10px;
+        }
+        
+        .demo-section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 1px solid #e1e5e9;
             border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            background: #f8f9fa;
         }
-
-        .user-card h4 {
-            font-size: 1.4rem;
-            margin-bottom: 1rem;
+        
+        .controls {
+            margin: 20px 0;
+            display: flex;
+            gap: 10px;
+            align-items: center;
         }
-
-        .user-card p {
-            margin: 0.5rem 0;
-            opacity: 0.9;
+        
+        .controls input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
         }
-
+        
+        .controls button {
+            padding: 8px 16px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .controls button:hover {
+            background: #0056b3;
+        }
+        
+        .controls button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        
+        .status {
+            margin: 20px 0;
+            padding: 15px;
+            background: #e9ecef;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        
+        .user-card {
+            margin: 20px 0;
+            padding: 20px;
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
         .loading {
-            background: #e3f2fd;
-            color: #1976d2;
-            padding: 1.5rem;
-            border-radius: 8px;
-            text-align: center;
-            border-left: 4px solid #1976d2;
+            color: #6c757d;
+            font-style: italic;
         }
-
+        
         .error {
-            background: #ffebee;
-            color: #c62828;
-            padding: 1.5rem;
-            border-radius: 8px;
-            text-align: center;
-            border-left: 4px solid #c62828;
+            color: #dc3545;
+            background: #f8d7da;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #f5c6cb;
         }
-
+        
+        .features {
+            margin: 30px 0;
+        }
+        
         .features ul {
             list-style: none;
             padding: 0;
         }
-
+        
         .features li {
-            padding: 0.75rem 0;
-            border-bottom: 1px solid #eee;
-            font-size: 1rem;
-        }
-
-        .features li:last-child {
-            border-bottom: none;
-        }
-
-        .code-example {
-            background: #f8f9fa;
-            border: 1px solid #e9ecef;
-            border-radius: 6px;
-            padding: 1rem;
-            margin: 1rem 0;
-            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-            font-size: 0.9rem;
-            overflow-x: auto;
-        }
-
-        .code-example pre {
-            margin: 0;
-        }
-
-        .interactive-demo {
-            background: #f8f9fa;
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
-            padding: 1.5rem;
-            margin: 1.5rem 0;
-        }
-
-        .demo-button {
-            background: #667eea;
-            color: white;
-            border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 6px;
-            font-size: 1rem;
-            cursor: pointer;
-            margin: 0.5rem;
-            transition: background-color 0.2s;
-        }
-
-        .demo-button:hover {
-            background: #5a6fd8;
-        }
-
-        .demo-button:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-        }
-
-        .cache-status {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin: 1rem 0;
-        }
-
-        .cache-item {
+            margin: 10px 0;
+            padding: 10px;
             background: white;
-            border: 1px solid #e9ecef;
-            border-radius: 6px;
-            padding: 1rem;
+            border-left: 4px solid #007bff;
+            border-radius: 4px;
+        }
+        
+        .footer {
             text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: #6c757d;
+            border-top: 1px solid #e1e5e9;
         }
-
-        .cache-item h4 {
-            color: #667eea;
-            margin-bottom: 0.5rem;
+        
+        .footer a {
+            color: #007bff;
+            text-decoration: none;
         }
-
-        .cache-item .status {
-            font-weight: bold;
-        }
-
-        .cache-item .status.fresh {
-            color: #28a745;
-        }
-
-        .cache-item .status.stale {
-            color: #ffc107;
-        }
-
-        .cache-item .status.expired {
-            color: #dc3545;
-        }
-
-        .mutation-status, .posts-status {
-            background: #f8f9fa;
-            padding: 1.5rem;
-            border-radius: 8px;
-            margin-bottom: 2rem;
-        }
-
-        .mutation-status p, .posts-status p {
-            margin: 0.5rem 0;
-            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-            font-size: 0.9rem;
-        }
-
-        .post-item {
-            background: white;
-            border: 1px solid #e9ecef;
-            border-radius: 6px;
-            padding: 1rem;
-            margin: 0.5rem 0;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        }
-
-        .post-item h4 {
-            color: #333;
-            margin-bottom: 0.5rem;
-        }
-
-        .post-item p {
-            color: #666;
-            margin: 0.25rem 0;
-        }
-
-        .post-meta {
-            font-size: 0.8rem;
-            color: #999;
-            margin-top: 0.5rem;
-        }
-
-        .optimistic {
-            background: #fff3cd;
-            border-color: #ffeaa7;
-        }
-
-        .success {
-            background: #d4edda;
-            border-color: #c3e6cb;
-        }
-
-        .error {
-            background: #f8d7da;
-            border-color: #f5c6cb;
-        }
-
-        @media (max-width: 768px) {
-            .app-header {
-                padding: 1.5rem;
-            }
-            
-            .app-header h1 {
-                font-size: 2rem;
-            }
-            
-            .app-main {
-                padding: 1rem;
-            }
-            
-            .demo-section {
-                padding: 1.5rem;
-            }
-            
-            .controls {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            
-            .controls input {
-                width: 100%;
-            }
+        
+        .footer a:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
 <body>
-    <div class="app">
-        <header class="app-header">
-            <h1>Leptos Query Demo</h1>
-            <p>Interactive showcase of leptos-query features and concepts</p>
-        </header>
+    <div class="header">
+        <h1>🚀 Leptos Query Demo</h1>
+        <p>A demonstration of leptos-query features for data fetching and caching</p>
+    </div>
 
-        <main class="app-main">
-            <div class="demo-section">
-                <h2>🚀 What is leptos-query?</h2>
-                <p>leptos-query is a powerful, type-safe data fetching and caching library for Leptos applications, inspired by React Query/TanStack Query. It provides automatic caching, background updates, error handling, and more.</p>
-                
-                <div class="code-example">
-                    <pre>use leptos_query_rs::{use_query, QueryOptions, QueryKey};
+    <div class="demo-section">
+        <h2>User Query Demo</h2>
+        
+        <div class="controls">
+            <label>User ID:</label>
+            <input type="number" id="userId" value="1" min="1" max="10">
+            <button id="fetchBtn">Fetch User</button>
+        </div>
 
-let user_query = use_query(
-    move || QueryKey::new(["users", &user_id.get().to_string()]),
-    move || {
-        let id = user_id.get();
-        move || async move { fetch_user(id).await }
-    },
-    QueryOptions::default()
-        .with_stale_time(Duration::from_secs(30))
-        .with_cache_time(Duration::from_secs(60))
-);</pre>
-                </div>
-            </div>
+        <div class="status" id="status">
+            <div>Loading: <span id="loading">false</span></div>
+            <div>Stale: <span id="stale">false</span></div>
+            <div>Error: <span id="error">false</span></div>
+        </div>
 
-            <div class="demo-section">
-                <h2>🎮 Interactive Demo</h2>
-                <p>This demo simulates how leptos-query would work in a real application. Try changing the user ID and watch the caching behavior!</p>
-                
-                <div class="interactive-demo">
-                    <div class="controls">
-                        <label>User ID: </label>
-                        <input type="number" id="userId" value="1" min="1" max="10">
-                        <button class="demo-button" onclick="fetchUser()">Fetch User</button>
-                        <button class="demo-button" onclick="invalidateCache()">Invalidate Cache</button>
-                        <button class="demo-button" onclick="clearCache()">Clear Cache</button>
-                        <button class="demo-button" onclick="simulateError()">Simulate Error</button>
-                        <button class="demo-button" onclick="toggleBackgroundRefetch()">Toggle Background Refetch</button>
-                    </div>
+        <div id="userData">
+            <div class="loading">Click 'Fetch User' to load data</div>
+        </div>
+    </div>
 
-                    <div class="query-status">
-                        <h3>Query Status</h3>
-                        <p id="loadingStatus">Loading: false</p>
-                        <p id="staleStatus">Stale: false</p>
-                        <p id="errorStatus">Error: false</p>
-                        <p id="fetchCount">Fetch Count: 0</p>
-                    </div>
+    <div class="features">
+        <h3>Features Demonstrated</h3>
+        <ul>
+            <li>🔄 Automatic caching with configurable stale times</li>
+            <li>⚡ Background updates when data becomes stale</li>
+            <li>🎯 Query key-based cache invalidation</li>
+            <li>🛡️ Built-in error handling</li>
+            <li>📊 Loading and stale state management</li>
+        </ul>
+    </div>
 
-                    <div class="user-data">
-                        <h3>User Data</h3>
-                        <div id="userDisplay">
-                            <div class="loading">
-                                <p>Click "Fetch User" to load data...</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="cache-status">
-                        <div class="cache-item">
-                            <h4>Cache Status</h4>
-                            <div id="cacheStatus" class="status fresh">Fresh</div>
-                        </div>
-                        <div class="cache-item">
-                            <h4>Last Updated</h4>
-                            <div id="lastUpdated">Never</div>
-                        </div>
-                        <div class="cache-item">
-                            <h4>Cache Size</h4>
-                            <div id="cacheSize">0 items</div>
-                        </div>
-                        <div class="cache-item">
-                            <h4>Background Refetch</h4>
-                            <div id="backgroundRefetch" class="status">Disabled</div>
-                        </div>
-                        <div class="cache-item">
-                            <h4>Error Count</h4>
-                            <div id="errorCount">0</div>
-                        </div>
-                        <div class="cache-item">
-                            <h4>Retry Attempts</h4>
-                            <div id="retryAttempts">0</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="demo-section">
-                <h2>🔄 Mutations Demo</h2>
-                <p>Simulate data mutations with optimistic updates and cache invalidation.</p>
-                
-                <div class="interactive-demo">
-                    <div class="controls">
-                        <label>User Name: </label>
-                        <input type="text" id="userName" value="John Doe" placeholder="Enter new name">
-                        <label>Email: </label>
-                        <input type="email" id="userEmail" value="john@example.com" placeholder="Enter new email">
-                        <button class="demo-button" onclick="updateUser()">Update User</button>
-                        <button class="demo-button" onclick="updateUserOptimistic()">Optimistic Update</button>
-                        <button class="demo-button" onclick="resetUser()">Reset User</button>
-                    </div>
-
-                    <div class="mutation-status">
-                        <h3>Mutation Status</h3>
-                        <p id="mutationLoading">Loading: false</p>
-                        <p id="mutationError">Error: false</p>
-                        <p id="mutationSuccess">Success: false</p>
-                        <p id="optimisticUpdate">Optimistic Update: false</p>
-                    </div>
-
-                    <div class="user-data">
-                        <h3>Current User Data</h3>
-                        <div id="currentUserDisplay">
-                            <div class="loading">
-                                <p>No user data loaded. Fetch a user first.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="demo-section">
-                <h2>📄 Infinite Queries Demo</h2>
-                <p>Simulate paginated data loading with infinite queries.</p>
-                
-                <div class="interactive-demo">
-                    <div class="controls">
-                        <label>Page Size: </label>
-                        <input type="number" id="pageSize" value="5" min="1" max="10">
-                        <button class="demo-button" onclick="loadPosts()">Load Posts</button>
-                        <button class="demo-button" onclick="loadMorePosts()">Load More</button>
-                        <button class="demo-button" onclick="resetPosts()">Reset Posts</button>
-                    </div>
-
-                    <div class="posts-status">
-                        <h3>Posts Status</h3>
-                        <p id="postsLoading">Loading: false</p>
-                        <p id="postsCount">Total Posts: 0</p>
-                        <p id="currentPage">Current Page: 0</p>
-                        <p id="hasNextPage">Has Next Page: false</p>
-                    </div>
-
-                    <div class="posts-data">
-                        <h3>Posts Data</h3>
-                        <div id="postsDisplay">
-                            <div class="loading">
-                                <p>No posts loaded. Click "Load Posts" to start.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="demo-section">
-                <h2>✨ Key Features</h2>
-                <div class="features">
-                    <ul>
-                        <li>🔄 <strong>Automatic Caching</strong> - Queries are automatically cached and shared across components</li>
-                        <li>⚡ <strong>Background Updates</strong> - Data stays fresh with automatic background refetching</li>
-                        <li>🎯 <strong>Query Key-based Invalidation</strong> - Precise cache invalidation using query keys</li>
-                        <li>🛡️ <strong>Built-in Error Handling</strong> - Comprehensive error handling and retry logic</li>
-                        <li>📊 <strong>Loading & Stale States</strong> - Rich state management for better UX</li>
-                        <li>🔧 <strong>Configurable Options</strong> - Customize stale times, cache times, retry logic</li>
-                        <li>🚀 <strong>Type Safety</strong> - Full Rust type safety throughout the API</li>
-                        <li>⚙️ <strong>Leptos Integration</strong> - Seamless integration with Leptos reactive system</li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="demo-section">
-                <h2>📚 Common Patterns</h2>
-                
-                <h3>Dependent Queries</h3>
-                <div class="code-example">
-                    <pre>// Fetch user first, then their posts
-let user_query = use_query(/* user query */);
-let posts_query = use_query(
-    move || QueryKey::new(["posts", &user_id.get().to_string()]),
-    move || async move { fetch_user_posts(user_id.get()).await },
-    QueryOptions::default()
-        .enabled(user_query.data.get().is_some()) // Only fetch if user exists
-);</pre>
-                </div>
-
-                <h3>Optimistic Updates</h3>
-                <div class="code-example">
-                    <pre>let mutation = use_mutation(
-    move || async move { update_user(user_id, data).await },
-    MutationOptions::default()
-        .on_success(move |_| {
-            // Invalidate and refetch user data
-            query_client.invalidate_queries(&QueryKeyPattern::Exact(
-                QueryKey::new(["users", &user_id.to_string()])
-            ));
-        })
-);</pre>
-                </div>
-
-                <h3>Infinite Queries</h3>
-                <div class="code-example">
-                    <pre>let infinite_query = use_infinite_query(
-    move || QueryKey::new(["posts", "infinite"]),
-    move |page_param| async move { 
-        fetch_posts_page(page_param).await 
-    },
-    InfiniteQueryOptions::default()
-        .get_next_page_param(|last_page, _pages| last_page.next_cursor)
-);</pre>
-                </div>
-            </div>
-
-            <div class="demo-section">
-                <h2>🔧 Configuration Options</h2>
-                <div class="code-example">
-                    <pre>QueryOptions::default()
-    .with_stale_time(Duration::from_secs(30))      // Data becomes stale after 30s
-    .with_cache_time(Duration::from_secs(300))     // Cache expires after 5 minutes
-    .with_refetch_interval(Duration::from_secs(60)) // Background refetch every minute
-    .with_retry(RetryConfig::default()
-        .max_attempts(3)
-        .delay(RetryDelay::Exponential {
-            initial: Duration::from_secs(1),
-            multiplier: 2.0,
-            max: Duration::from_secs(30),
-        }))
-    .keep_previous_data()                          // Show old data while fetching
-    .with_suspense()                               // Use Suspense for loading states</pre>
-                </div>
-            </div>
-        </main>
-
-        <footer class="app-footer">
-            <p>Built with ❤️ using <a href="https://github.com/cloud-shuttle/leptos-query" target="_blank">leptos-query</a></p>
-        </footer>
+    <div class="footer">
+        <p>Built with <a href="https://github.com/cloud-shuttle/leptos-query" target="_blank">leptos-query</a></p>
+        <p><em>This is a static demo showing the intended functionality. The actual Rust/WASM demo is being developed.</em></p>
     </div>
 
     <script>
-        // Simulate leptos-query behavior
+        // Simple JavaScript demo to show the intended functionality
         let cache = new Map();
-        let fetchCount = 0;
-        let lastFetchTime = null;
-        let errorCount = 0;
-        let retryAttempts = 0;
-        let backgroundRefetchEnabled = false;
-        let backgroundRefetchInterval = null;
-        let currentUser = null;
-        let posts = [];
-        let currentPage = 0;
-        let hasNextPage = true;
-        let postsLoading = false;
+        let loading = false;
+        let stale = false;
+        let error = false;
 
         function updateStatus() {
-            const userId = document.getElementById('userId').value;
-            const cached = cache.get(userId);
-            const now = Date.now();
-            
-            document.getElementById('fetchCount').textContent = `Fetch Count: ${fetchCount}`;
-            
-            if (cached) {
-                const age = now - cached.timestamp;
-                const isStale = age > 30000; // 30 seconds
-                const isExpired = age > 300000; // 5 minutes
-                
-                document.getElementById('loadingStatus').textContent = 'Loading: false';
-                document.getElementById('staleStatus').textContent = `Stale: ${isStale}`;
-                document.getElementById('errorStatus').textContent = 'Error: false';
-                
-                const cacheStatus = document.getElementById('cacheStatus');
-                cacheStatus.textContent = isExpired ? 'Expired' : (isStale ? 'Stale' : 'Fresh');
-                cacheStatus.className = `status ${isExpired ? 'expired' : (isStale ? 'stale' : 'fresh')}`;
-                
-                document.getElementById('lastUpdated').textContent = new Date(cached.timestamp).toLocaleTimeString();
-            } else {
-                document.getElementById('loadingStatus').textContent = 'Loading: false';
-                document.getElementById('staleStatus').textContent = 'Stale: false';
-                document.getElementById('errorStatus').textContent = 'Error: false';
-                document.getElementById('cacheStatus').textContent = 'Not Cached';
-                document.getElementById('cacheStatus').className = 'status';
-                document.getElementById('lastUpdated').textContent = 'Never';
-            }
-            
-            document.getElementById('cacheSize').textContent = `${cache.size} items`;
-            document.getElementById('errorCount').textContent = errorCount;
-            document.getElementById('retryAttempts').textContent = retryAttempts;
-            document.getElementById('backgroundRefetch').textContent = backgroundRefetchEnabled ? 'Enabled' : 'Disabled';
+            document.getElementById('loading').textContent = loading;
+            document.getElementById('stale').textContent = stale;
+            document.getElementById('error').textContent = error;
         }
 
-        function fetchUser() {
-            const userId = document.getElementById('userId').value;
-            const userDisplay = document.getElementById('userDisplay');
-            
+        async function fetchUser(id) {
+            loading = true;
+            error = false;
+            updateStatus();
+
             // Check cache first
-            const cached = cache.get(userId);
-            const now = Date.now();
+            const cacheKey = `user-${id}`;
+            const cached = cache.get(cacheKey);
             
-            if (cached && (now - cached.timestamp) < 300000) { // 5 minute cache
-                // Return cached data
-                userDisplay.innerHTML = `
-                    <div class="user-card">
-                        <h4>${cached.data.name} (Cached)</h4>
-                        <p>Email: ${cached.data.email}</p>
-                        <p>ID: ${cached.data.id}</p>
-                    </div>
-                `;
+            if (cached && !stale) {
+                loading = false;
                 updateStatus();
+                displayUser(cached);
                 return;
             }
-            
-            // Simulate loading
-            userDisplay.innerHTML = `
-                <div class="loading">
-                    <p>Loading user data...</p>
-                </div>
-            `;
-            
-            // Simulate API call
-            setTimeout(() => {
-                fetchCount++;
-                lastFetchTime = now;
+
+            try {
+                // Simulate API call
+                await new Promise(resolve => setTimeout(resolve, 1000));
                 
-                const userData = {
-                    id: parseInt(userId),
-                    name: `User ${userId}`,
-                    email: `user${userId}@example.com`
+                if (id === 0) {
+                    throw new Error('User not found');
+                }
+
+                const user = {
+                    id: id,
+                    name: `User ${id}`,
+                    email: `user${id}@example.com`
                 };
-                
+
                 // Cache the result
-                cache.set(userId, {
-                    data: userData,
-                    timestamp: now
-                });
-                
-                userDisplay.innerHTML = `
-                    <div class="user-card">
-                        <h4>${userData.name}</h4>
-                        <p>Email: ${userData.email}</p>
-                        <p>ID: ${userData.id}</p>
-                    </div>
-                `;
-                
-                // Update current user for mutations
-                currentUser = userData;
-                updateCurrentUserDisplay();
-                
+                cache.set(cacheKey, user);
+                stale = false;
+                loading = false;
                 updateStatus();
-            }, 1000);
+                displayUser(user);
+
+            } catch (err) {
+                error = true;
+                loading = false;
+                updateStatus();
+                displayError(err.message);
+            }
         }
 
-        function invalidateCache() {
-            const userId = document.getElementById('userId').value;
-            cache.delete(userId);
-            updateStatus();
-            
-            const userDisplay = document.getElementById('userDisplay');
-            userDisplay.innerHTML = `
-                <div class="loading">
-                    <p>Cache invalidated. Fetch again to load fresh data.</p>
+        function displayUser(user) {
+            document.getElementById('userData').innerHTML = `
+                <div class="user-card">
+                    <h4>${user.name}</h4>
+                    <p>Email: ${user.email}</p>
+                    <p>ID: ${user.id}</p>
                 </div>
             `;
         }
 
-        function clearCache() {
-            cache.clear();
-            updateStatus();
-            
-            const userDisplay = document.getElementById('userDisplay');
-            userDisplay.innerHTML = `
-                <div class="loading">
-                    <p>Cache cleared. Fetch again to load data.</p>
-                </div>
-            `;
-        }
-
-        function simulateError() {
-            const userId = document.getElementById('userId').value;
-            const userDisplay = document.getElementById('userDisplay');
-            
-            userDisplay.innerHTML = `
+        function displayError(message) {
+            document.getElementById('userData').innerHTML = `
                 <div class="error">
-                    <p>Simulated error: User ${userId} not found</p>
+                    <p>Error: ${message}</p>
                 </div>
             `;
-            
-            errorCount++;
-            retryAttempts++;
-            updateStatus();
-            
-            // Auto-retry after 2 seconds
-            setTimeout(() => {
-                retryAttempts++;
-                updateStatus();
-                fetchUser();
-            }, 2000);
         }
 
-        function toggleBackgroundRefetch() {
-            backgroundRefetchEnabled = !backgroundRefetchEnabled;
-            
-            if (backgroundRefetchEnabled) {
-                backgroundRefetchInterval = setInterval(() => {
-                    const userId = document.getElementById('userId').value;
-                    const cached = cache.get(userId);
-                    if (cached) {
-                        const now = Date.now();
-                        const age = now - cached.timestamp;
-                        if (age > 30000) { // 30 seconds
-                            console.log('Background refetch triggered');
-                            fetchUser();
-                        }
-                    }
-                }, 5000); // Check every 5 seconds
-            } else {
-                if (backgroundRefetchInterval) {
-                    clearInterval(backgroundRefetchInterval);
-                    backgroundRefetchInterval = null;
-                }
-            }
-            
-            updateStatus();
-        }
+        // Event listeners
+        document.getElementById('fetchBtn').addEventListener('click', () => {
+            const userId = parseInt(document.getElementById('userId').value);
+            fetchUser(userId);
+        });
 
-        // Mutation functions
-        function updateUser() {
-            const userName = document.getElementById('userName').value;
-            const userEmail = document.getElementById('userEmail').value;
-            
-            if (!currentUser) {
-                alert('Please fetch a user first');
-                return;
-            }
-            
-            document.getElementById('mutationLoading').textContent = 'Loading: true';
-            document.getElementById('mutationError').textContent = 'Error: false';
-            document.getElementById('mutationSuccess').textContent = 'Success: false';
-            
-            // Simulate API call
-            setTimeout(() => {
-                currentUser.name = userName;
-                currentUser.email = userEmail;
-                
-                // Update cache
-                const userId = currentUser.id.toString();
-                const cached = cache.get(userId);
-                if (cached) {
-                    cache.set(userId, {
-                        data: currentUser,
-                        timestamp: Date.now()
-                    });
-                }
-                
-                document.getElementById('mutationLoading').textContent = 'Loading: false';
-                document.getElementById('mutationSuccess').textContent = 'Success: true';
-                
-                updateCurrentUserDisplay();
-                updateStatus();
-                
-                // Reset success after 3 seconds
-                setTimeout(() => {
-                    document.getElementById('mutationSuccess').textContent = 'Success: false';
-                }, 3000);
-            }, 1500);
-        }
-
-        function updateUserOptimistic() {
-            const userName = document.getElementById('userName').value;
-            const userEmail = document.getElementById('userEmail').value;
-            
-            if (!currentUser) {
-                alert('Please fetch a user first');
-                return;
-            }
-            
-            // Optimistic update
-            const originalUser = { ...currentUser };
-            currentUser.name = userName;
-            currentUser.email = userEmail;
-            
-            document.getElementById('optimisticUpdate').textContent = 'Optimistic Update: true';
-            updateCurrentUserDisplay();
-            
-            // Simulate API call
-            setTimeout(() => {
-                // Update cache
-                const userId = currentUser.id.toString();
-                const cached = cache.get(userId);
-                if (cached) {
-                    cache.set(userId, {
-                        data: currentUser,
-                        timestamp: Date.now()
-                    });
-                }
-                
-                document.getElementById('optimisticUpdate').textContent = 'Optimistic Update: false';
-                updateStatus();
-            }, 1000);
-        }
-
-        function resetUser() {
-            if (!currentUser) return;
-            
-            currentUser.name = `User ${currentUser.id}`;
-            currentUser.email = `user${currentUser.id}@example.com`;
-            
-            // Update cache
-            const userId = currentUser.id.toString();
-            const cached = cache.get(userId);
-            if (cached) {
-                cache.set(userId, {
-                    data: currentUser,
-                    timestamp: Date.now()
-                });
-            }
-            
-            updateCurrentUserDisplay();
-            updateStatus();
-        }
-
-        function updateCurrentUserDisplay() {
-            const display = document.getElementById('currentUserDisplay');
-            if (currentUser) {
-                display.innerHTML = `
-                    <div class="user-card">
-                        <h4>${currentUser.name}</h4>
-                        <p>Email: ${currentUser.email}</p>
-                        <p>ID: ${currentUser.id}</p>
-                    </div>
-                `;
-            } else {
-                display.innerHTML = `
-                    <div class="loading">
-                        <p>No user data loaded. Fetch a user first.</p>
-                    </div>
-                `;
-            }
-        }
-
-        // Infinite queries functions
-        function loadPosts() {
-            posts = [];
-            currentPage = 0;
-            hasNextPage = true;
-            postsLoading = true;
-            
-            document.getElementById('postsLoading').textContent = 'Loading: true';
-            updatePostsStatus();
-            
-            setTimeout(() => {
-                const pageSize = parseInt(document.getElementById('pageSize').value);
-                const newPosts = generatePosts(currentPage, pageSize);
-                posts = newPosts;
-                currentPage = 1;
-                hasNextPage = posts.length >= pageSize;
-                postsLoading = false;
-                
-                document.getElementById('postsLoading').textContent = 'Loading: false';
-                updatePostsDisplay();
-                updatePostsStatus();
-            }, 1000);
-        }
-
-        function loadMorePosts() {
-            if (!hasNextPage || postsLoading) return;
-            
-            postsLoading = true;
-            document.getElementById('postsLoading').textContent = 'Loading: true';
-            
-            setTimeout(() => {
-                const pageSize = parseInt(document.getElementById('pageSize').value);
-                const newPosts = generatePosts(currentPage, pageSize);
-                posts = posts.concat(newPosts);
-                currentPage++;
-                hasNextPage = newPosts.length >= pageSize;
-                postsLoading = false;
-                
-                document.getElementById('postsLoading').textContent = 'Loading: false';
-                updatePostsDisplay();
-                updatePostsStatus();
-            }, 1000);
-        }
-
-        function resetPosts() {
-            posts = [];
-            currentPage = 0;
-            hasNextPage = true;
-            postsLoading = false;
-            
-            document.getElementById('postsLoading').textContent = 'Loading: false';
-            updatePostsDisplay();
-            updatePostsStatus();
-        }
-
-        function generatePosts(page, pageSize) {
-            const posts = [];
-            const startId = page * pageSize + 1;
-            
-            for (let i = 0; i < pageSize; i++) {
-                posts.push({
-                    id: startId + i,
-                    title: `Post ${startId + i}`,
-                    content: `This is the content for post ${startId + i}. It demonstrates how infinite queries work with pagination.`,
-                    author: `Author ${Math.floor(Math.random() * 10) + 1}`,
-                    date: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toLocaleDateString()
-                });
-            }
-            
-            return posts;
-        }
-
-        function updatePostsDisplay() {
-            const display = document.getElementById('postsDisplay');
-            
-            if (posts.length === 0) {
-                display.innerHTML = `
-                    <div class="loading">
-                        <p>No posts loaded. Click "Load Posts" to start.</p>
-                    </div>
-                `;
-                return;
-            }
-            
-            const postsHtml = posts.map(post => `
-                <div class="post-item">
-                    <h4>${post.title}</h4>
-                    <p>${post.content}</p>
-                    <div class="post-meta">
-                        <strong>Author:</strong> ${post.author} | 
-                        <strong>Date:</strong> ${post.date} | 
-                        <strong>ID:</strong> ${post.id}
-                    </div>
-                </div>
-            `).join('');
-            
-            display.innerHTML = postsHtml;
-        }
-
-        function updatePostsStatus() {
-            document.getElementById('postsCount').textContent = `Total Posts: ${posts.length}`;
-            document.getElementById('currentPage').textContent = `Current Page: ${currentPage}`;
-            document.getElementById('hasNextPage').textContent = `Has Next Page: ${hasNextPage}`;
-        }
-
-        // Initialize
-        updateStatus();
-        updateCurrentUserDisplay();
-        updatePostsDisplay();
-        updatePostsStatus();
-        
-        // Auto-fetch when user ID changes
-        document.getElementById('userId').addEventListener('change', () => {
-            const userDisplay = document.getElementById('userDisplay');
-            userDisplay.innerHTML = `
-                <div class="loading">
-                    <p>User ID changed. Click "Fetch User" to load new data.</p>
-            `;
-            currentUser = null;
-            updateCurrentUserDisplay();
+        document.getElementById('userId').addEventListener('input', () => {
+            // Mark as stale when user changes ID
+            stale = true;
             updateStatus();
         });
+
+        // Initial load
+        updateStatus();
     </script>
 </body>
 </html>
