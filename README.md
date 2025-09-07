@@ -213,6 +213,23 @@ let options = QueryOptions::default()
     .with_refetch_interval(Duration::from_secs(30));
 ```
 
+## Comparisons
+
+### vs TanStack Query (React Query)
+
+leptos-query-rs is inspired by TanStack Query but built for the Rust/Leptos ecosystem. See our [comprehensive comparison](docs/status/TANSTACK_QUERY_COMPARISON.md) for a detailed analysis.
+
+**Key advantages of leptos-query-rs:**
+- ✅ **Compile-time type safety** with Rust's type system
+- ✅ **Local-first architecture** with CRDT-based conflict resolution
+- ✅ **Native SSR support** without hydration complexity
+- ✅ **WebAssembly performance** with zero-cost abstractions
+- ✅ **Memory safety** preventing entire classes of runtime errors
+
+**When to choose each:**
+- **TanStack Query**: React applications, mature ecosystem, extensive community
+- **leptos-query-rs**: Leptos applications, type safety, performance, offline-first
+
 ## Examples
 
 See the `examples/` directory for complete working examples:
