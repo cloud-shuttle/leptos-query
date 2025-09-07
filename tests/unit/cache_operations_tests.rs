@@ -1,8 +1,7 @@
 //! Unit tests for cache operations and invalidation patterns
 
 use leptos_query_rs::*;
-use leptos_query_rs::types::{QueryKey, QueryKeyPattern, QueryStatus};
-use leptos_query_rs::client::{SerializedData, CacheEntry};
+use leptos_query_rs::types::{QueryKey, QueryKeyPattern};
 use serde::{Serialize, Deserialize};
 use std::time::{Duration, Instant};
 

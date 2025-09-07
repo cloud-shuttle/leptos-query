@@ -366,27 +366,7 @@ mod tests {
         name: String,
     }
 
-    async fn mock_fetch_page(page: usize) -> Result<Page<TestItem>, QueryError> {
-        let per_page = 10;
-        let start = page * per_page;
-        let data = (start..start + per_page)
-            .map(|i| TestItem {
-                id: i,
-                name: format!("Item {}", i),
-            })
-            .collect();
-
-        Ok(Page {
-            data,
-            info: PageInfo {
-                page,
-                per_page,
-                total: 100,
-                has_next: page < 9,
-                has_prev: page > 0,
-            },
-        })
-    }
+    // Mock function removed to eliminate warnings
 
     #[test]
     fn test_infinite_query_options_builder() {

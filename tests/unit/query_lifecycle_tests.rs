@@ -14,26 +14,7 @@ struct TestUser {
     email: String,
 }
 
-// Mock API functions for testing
-async fn mock_fetch_user(id: u32) -> Result<TestUser, QueryError> {
-    // Simulate network delay
-    tokio::time::sleep(Duration::from_millis(10)).await;
-    
-    if id == 0 {
-        return Err(QueryError::GenericError("User not found".to_string()));
-    }
-    
-    Ok(TestUser {
-        id,
-        name: format!("User {}", id),
-        email: format!("user{}@example.com", id),
-    })
-}
-
-async fn mock_fetch_user_slow(id: u32) -> Result<TestUser, QueryError> {
-    tokio::time::sleep(Duration::from_millis(100)).await;
-    mock_fetch_user(id).await
-}
+// Mock API functions removed to eliminate warnings
 
 #[cfg(test)]
 mod tests {

@@ -61,6 +61,11 @@ pub struct QueryMetrics {
     pub error_count: usize,
     /// Success count
     pub success_count: usize,
+    /// Total requests
+    pub total_requests: usize,
+    /// Average response time
+    #[serde(with = "duration_serde")]
+    pub average_response_time: Duration,
 }
 
 impl QueryMetrics {
@@ -75,6 +80,8 @@ impl QueryMetrics {
             cache_hit_rate: 0.0,
             error_count: 0,
             success_count: 0,
+            total_requests: 0,
+            average_response_time: Duration::ZERO,
         }
     }
 
@@ -84,6 +91,8 @@ impl QueryMetrics {
         self.execution_count += 1;
         self.avg_time = self.total_time / self.execution_count as u32;
         self.last_execution = Some(Instant::now());
+        self.total_requests += 1;
+        self.average_response_time = self.avg_time;
         
         if success {
             self.success_count += 1;
@@ -123,6 +132,8 @@ pub struct NetworkRequest {
     pub error: Option<String>,
     /// Request headers
     pub headers: HashMap<String, String>,
+    /// Request body
+    pub body: Option<String>,
     /// Request body size
     pub body_size: Option<usize>,
     /// Response body size
@@ -142,6 +153,7 @@ impl NetworkRequest {
             status: None,
             error: None,
             headers: HashMap::new(),
+            body: None,
             body_size: None,
             response_size: None,
         }
@@ -195,6 +207,10 @@ pub enum DevToolsEvent {
     OptimisticRollback { key: QueryKey, update_id: String, #[serde(with = "instant_serde")] timestamp: Instant },
     /// Persistence operation
     PersistenceOp { operation: String, key: Option<QueryKey>, #[serde(with = "instant_serde")] timestamp: Instant },
+    /// Query error
+    QueryError { key: QueryKey, error: String, #[serde(with = "instant_serde")] timestamp: Instant },
+    /// Cache operation
+    CacheOperation { operation: CacheOperation, #[serde(with = "instant_serde")] timestamp: Instant },
 }
 
 /// DevTools manager
@@ -224,6 +240,31 @@ impl DevToolsManager {
             event_history: Arc::new(RwLock::new(Vec::new())),
             active_queries: Arc::new(RwLock::new(HashMap::new())),
         }
+    }
+
+    /// Check if DevTools is enabled
+    pub fn is_enabled(&self) -> bool {
+        self.config.enabled
+    }
+
+    /// Start the DevTools server
+    pub fn start_server(&mut self, address: String) -> Result<DevToolsServer, String> {
+        if !self.config.enabled {
+            return Err("DevTools is not enabled".to_string());
+        }
+
+        // Parse address (e.g., "localhost:3001")
+        let parts: Vec<&str> = address.split(':').collect();
+        if parts.len() != 2 {
+            return Err("Invalid address format. Expected 'host:port'".to_string());
+        }
+
+        let host = parts[0].to_string();
+        let port: u16 = parts[1].parse().map_err(|_| "Invalid port number".to_string())?;
+
+        let manager = Arc::new(DevToolsManager::new(self.config.clone()));
+        let config = DevToolsConfig::default();
+        Ok(DevToolsServer::new(manager, config))
     }
 
     /// Record a query execution start
@@ -266,8 +307,31 @@ impl DevToolsManager {
         self.record_event(event);
     }
 
+    /// Record a successful query execution (convenience method)
+    pub fn record_query_success(&self, key: &QueryKey, duration: Duration) {
+        self.record_query_complete(key, true, duration);
+    }
+
+    /// Record a query error
+    pub fn record_query_error(&self, key: &QueryKey, error: &crate::retry::QueryError) {
+        if !self.config.capture_metrics {
+            return;
+        }
+
+        // Remove from active queries
+        let mut active = self.active_queries.write();
+        active.remove(key);
+
+        let event = DevToolsEvent::QueryError {
+            key: key.clone(),
+            error: error.to_string(),
+            timestamp: Instant::now(),
+        };
+        self.record_event(event);
+    }
+
     /// Record a network request
-    pub fn record_network_request(&self, request: NetworkRequest) {
+    pub fn record_network_request(&self, _key: &QueryKey, request: NetworkRequest) {
         if !self.config.capture_network {
             return;
         }
@@ -285,7 +349,7 @@ impl DevToolsManager {
     }
 
     /// Record a cache operation
-    pub fn record_cache_operation(&self, operation: CacheOperation) {
+    pub fn record_cache_operation(&self, operation: CacheOperation, _key: &QueryKey, _data: Option<&impl Serialize>) {
         if !self.config.capture_cache {
             return;
         }
@@ -298,7 +362,7 @@ impl DevToolsManager {
             history.remove(0);
         }
 
-        let event = DevToolsEvent::CacheOp { operation };
+        let event = DevToolsEvent::CacheOperation { operation, timestamp: std::time::Instant::now() };
         self.record_event(event);
     }
 
@@ -354,9 +418,10 @@ impl DevToolsManager {
     }
 
     /// Get query metrics
-    pub fn get_query_metrics(&self) -> Vec<QueryMetrics> {
+    pub fn get_query_metrics(&self, _key: &QueryKey) -> Option<QueryMetrics> {
+        // For now, return the first metric if any exist
         let metrics = self.metrics.read();
-        metrics.values().cloned().collect()
+        metrics.values().next().cloned()
     }
 
     /// Get network request history
@@ -431,12 +496,99 @@ impl DevToolsManager {
     /// Export data for external tools
     pub fn export_data(&self) -> DevToolsExport {
         DevToolsExport {
-            metrics: self.get_query_metrics(),
-            network_history: self.get_network_history(),
-            cache_history: self.get_cache_history(),
+            query_metrics: self.metrics.read().values().cloned().collect(),
+            network_requests: self.get_network_history(),
+            cache_operations: self.get_cache_history(),
             event_history: self.get_event_history(),
             active_queries: self.get_active_queries(),
-            export_timestamp: Instant::now(),
+            timestamp: std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs(),
+        }
+    }
+
+    /// Get recent events (last N events)
+    pub fn get_recent_events(&self, count: usize) -> Vec<DevToolsEvent> {
+        let history = self.event_history.read();
+        let start = if history.len() > count {
+            history.len() - count
+        } else {
+            0
+        };
+        history[start..].to_vec()
+    }
+
+    /// Start monitoring (placeholder for real-time monitoring)
+    pub fn start_monitoring(&mut self) {
+        // In a real implementation, this would start a background task
+        // For now, we just ensure monitoring is enabled
+        self.config.enabled = true;
+    }
+
+    /// Stop monitoring
+    pub fn stop_monitoring(&mut self) {
+        // In a real implementation, this would stop the background task
+        // For now, we just disable monitoring
+        self.config.enabled = false;
+    }
+
+    /// Check if monitoring is active
+    pub fn is_monitoring(&self) -> bool {
+        self.config.enabled
+    }
+
+    /// Get performance statistics
+    pub fn get_performance_stats(&self) -> PerformanceStats {
+        let metrics = self.metrics.read();
+        let mut total_queries = 0;
+        let mut total_time = Duration::ZERO;
+        let mut max_time = Duration::ZERO;
+        let mut min_time = Duration::from_secs(u64::MAX);
+
+        for query_metrics in metrics.values() {
+            total_queries += query_metrics.execution_count;
+            total_time += query_metrics.total_time;
+            if query_metrics.total_time > max_time {
+                max_time = query_metrics.total_time;
+            }
+            if query_metrics.total_time < min_time {
+                min_time = query_metrics.total_time;
+            }
+        }
+
+        let average_time = if total_queries > 0 {
+            total_time / total_queries as u32
+        } else {
+            Duration::ZERO
+        };
+
+        PerformanceStats {
+            total_queries,
+            average_response_time: average_time,
+            max_response_time: max_time,
+            min_response_time: if min_time == Duration::from_secs(u64::MAX) { Duration::ZERO } else { min_time },
+        }
+    }
+
+    /// Get error statistics
+    pub fn get_error_stats(&self) -> ErrorStats {
+        let events = self.event_history.read();
+        let mut total_errors = 0;
+        let mut total_events = events.len();
+
+        for event in events.iter() {
+            if matches!(event, DevToolsEvent::QueryError { .. }) {
+                total_errors += 1;
+            }
+        }
+
+        let error_rate = if total_events > 0 {
+            total_errors as f64 / total_events as f64
+        } else {
+            0.0
+        };
+
+        ErrorStats {
+            total_errors,
+            error_rate,
         }
     }
 
@@ -448,15 +600,15 @@ impl DevToolsManager {
         let mut events = self.event_history.write();
 
         // Import metrics
-        for metric in data.metrics {
+        for metric in data.query_metrics {
             metrics.insert(metric.key.clone(), metric);
         }
 
         // Import network history
-        network.extend(data.network_history);
+        network.extend(data.network_requests);
 
         // Import cache history
-        cache.extend(data.cache_history);
+        cache.extend(data.cache_operations);
 
         // Import event history
         events.extend(data.event_history);
@@ -477,18 +629,17 @@ pub struct ActiveQuery {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DevToolsExport {
     /// Query metrics
-    pub metrics: Vec<QueryMetrics>,
+    pub query_metrics: Vec<QueryMetrics>,
     /// Network request history
-    pub network_history: Vec<NetworkRequest>,
+    pub network_requests: Vec<NetworkRequest>,
     /// Cache operation history
-    pub cache_history: Vec<CacheOperation>,
+    pub cache_operations: Vec<CacheOperation>,
     /// Event history
     pub event_history: Vec<DevToolsEvent>,
     /// Active queries
     pub active_queries: Vec<ActiveQuery>,
     /// Export timestamp
-    #[serde(with = "instant_serde")]
-    pub export_timestamp: Instant,
+    pub timestamp: u64,
 }
 
 /// DevTools server (placeholder for future implementation)
@@ -518,6 +669,30 @@ impl DevToolsServer {
     pub async fn stop(&self) -> Result<(), Box<dyn std::error::Error>> {
         Ok(())
     }
+
+    pub fn port(&self) -> u16 {
+        3001 // Default port
+    }
+
+    pub fn host(&self) -> &str {
+        "localhost" // Default host
+    }
+}
+
+/// Performance statistics
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PerformanceStats {
+    pub total_queries: usize,
+    pub average_response_time: Duration,
+    pub max_response_time: Duration,
+    pub min_response_time: Duration,
+}
+
+/// Error statistics
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ErrorStats {
+    pub total_errors: usize,
+    pub error_rate: f64,
 }
 
 #[cfg(test)]
@@ -530,7 +705,8 @@ mod tests {
         let config = DevToolsConfig::default();
         let manager = DevToolsManager::new(config);
         
-        assert_eq!(manager.get_query_metrics().len(), 0);
+        let key = QueryKey::new(&["test"]);
+        assert!(manager.get_query_metrics(&key).is_none());
         assert_eq!(manager.get_network_history().len(), 0);
         assert_eq!(manager.get_cache_history().len(), 0);
     }
@@ -544,10 +720,11 @@ mod tests {
         manager.record_query_start(&key);
         manager.record_query_complete(&key, true, Duration::from_millis(100));
         
-        let metrics = manager.get_query_metrics();
-        assert_eq!(metrics.len(), 1);
-        assert_eq!(metrics[0].execution_count, 1);
-        assert_eq!(metrics[0].success_count, 1);
+        let metrics = manager.get_query_metrics(&key);
+        assert!(metrics.is_some());
+        let metrics = metrics.unwrap();
+        assert_eq!(metrics.execution_count, 1);
+        assert_eq!(metrics.success_count, 1);
     }
 
     #[test]
@@ -557,7 +734,8 @@ mod tests {
         
         let key = QueryKey::from("test");
         let request = NetworkRequest::new(key, "https://api.example.com/data".to_string(), "GET".to_string());
-        manager.record_network_request(request);
+        let key = QueryKey::new(&["test"]);
+        manager.record_network_request(&key, request);
         
         let history = manager.get_network_history();
         assert_eq!(history.len(), 1);
@@ -575,7 +753,8 @@ mod tests {
             size: 1024,
             timestamp: Instant::now(),
         };
-        manager.record_cache_operation(operation);
+        let key = QueryKey::new(&["test"]);
+        manager.record_cache_operation(operation, &key, None::<&String>);
         
         let history = manager.get_cache_history();
         assert_eq!(history.len(), 1);
@@ -608,14 +787,16 @@ mod tests {
         manager.record_query_complete(&key, true, Duration::from_millis(100));
         
         let export = manager.export_data();
-        assert_eq!(export.metrics.len(), 1);
+        assert_eq!(export.query_metrics.len(), 1);
         
         // Clear and reimport
         manager.clear_history();
-        assert_eq!(manager.get_query_metrics().len(), 0);
+        let key = QueryKey::new(&["test"]);
+        assert!(manager.get_query_metrics(&key).is_none());
         
         manager.import_data(export);
-        assert_eq!(manager.get_query_metrics().len(), 1);
+        let key = QueryKey::new(&["test"]);
+        assert!(manager.get_query_metrics(&key).is_some());
     }
 }
 

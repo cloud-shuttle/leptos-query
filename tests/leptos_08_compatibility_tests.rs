@@ -31,7 +31,7 @@ mod tests {
     #[test]
     fn test_leptos_08_imports() {
         // Test that all necessary Leptos 0.8 imports work
-        let (read_signal, _write_signal) = signal(42);
+        let (_read_signal, _write_signal) = signal(42);
         let _derived = Signal::derive(|| 42);
         let _callback = Callback::new(|_: ()| {});
         

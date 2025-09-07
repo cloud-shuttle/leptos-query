@@ -19,13 +19,7 @@ struct TestData {
 mod tests {
     use super::*;
 
-    // Helper function to create a "mutated" query key (simulating a bug)
-    fn create_mutated_query_key(segments: &[&str]) -> QueryKey {
-        // This simulates a mutation where we accidentally reverse the segments
-        let mut reversed_segments = segments.to_vec();
-        reversed_segments.reverse();
-        QueryKey::new(&reversed_segments)
-    }
+    // Helper function removed to eliminate warnings
 
     #[test]
     fn test_query_key_creation_catches_mutations() {
@@ -282,7 +276,6 @@ mod test_quality_validation {
     #[test]
     fn test_edge_case_coverage() {
         // This test ensures we're covering edge cases
-        let client = QueryClient::new();
         
         // Empty key
         let empty_key = QueryKey::new(&[] as &[&str]);

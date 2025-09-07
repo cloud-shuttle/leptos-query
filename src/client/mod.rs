@@ -100,6 +100,16 @@ impl QueryClient {
         
         Ok(())
     }
+
+    /// Get query data from the cache
+    pub fn get_query_data<T: DeserializeOwned>(&self, key: &QueryKey) -> Option<T> {
+        let cache = self.cache.read();
+        if let Some(entry) = cache.get(key) {
+            bincode::deserialize(&entry.data.data).ok()
+        } else {
+            None
+        }
+    }
     
     /// Remove a query from the cache
     pub fn remove_query(&self, key: &QueryKey) {

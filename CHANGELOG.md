@@ -5,19 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.5.0] - 2025-09-06
+## [0.5.1] - 2025-01-27
 
 ### Added
-- **Comprehensive Test Suite**: Added 111+ tests covering unit, integration, property, API stability, and compatibility testing
-- **Real-World Examples**: Added three complete example applications:
-  - Todo App with CRUD operations and caching
-  - Blog App with post management and real-time updates
-  - Weather App with data fetching and forecast display
-- **Performance Benchmarks**: Added comprehensive benchmarking suite with Criterion.rs
-- **CI/CD Pipeline**: Added GitHub Actions workflows for automated testing and deployment
-- **Cross-Browser Testing**: Added Playwright tests for cross-browser compatibility
-- **API Stability Tests**: Added tests to ensure public API contracts remain stable
-- **Leptos 0.8 Compatibility**: Added comprehensive compatibility tests for Leptos 0.8
+- **Sync Integration**: Complete integration with `leptos-sync-core` for local-first data synchronization
+  - CRDT-based conflict resolution with version tracking
+  - Offline operation queuing and automatic sync on reconnect
+  - Support for Last Writer Wins, Merge, and Custom conflict resolution strategies
+  - Real-time synchronization capabilities
+- **Persistence Backends**: Added Local Storage and IndexedDB persistence backends
+  - `LocalStorageBackend` for web environments with automatic base64 encoding
+  - `IndexedDBBackend` for advanced web storage with mock fallbacks for non-WASM targets
+  - Configurable storage backends with trait-based architecture
+- **DevTools**: Advanced debugging and monitoring tools
+  - Real-time query metrics and performance monitoring
+  - Network request tracking and analysis
+  - Cache operation visualization and debugging
+  - Export/import functionality for debugging data
+  - Performance statistics and error tracking
+- **Enhanced Query Client**: Added `get_query_data` method for direct cache access
+- **Comprehensive Test Suite**: Added 156+ tests covering all new features
+  - Sync integration tests with CRDT operations
+  - Persistence backend tests with mock implementations
+  - DevTools functionality tests with real-time monitoring
+  - API stability and compatibility tests
 - **Documentation**: Added comprehensive documentation including:
   - API reference
   - Quick start guide

@@ -1,6 +1,6 @@
 [package]
 name = "leptos-query-rs"
-version = "0.5.0"
+version = "0.5.1"
 edition = "2021"
 authors = ["CloudShuttle Team"]
 description = "A powerful, type-safe data fetching and caching library for Leptos 0.8 applications"
@@ -21,6 +21,10 @@ persistence = []
 offline = ["persistence"]
 native = ["tokio", "reqwest"]
 wasm = []
+
+# Ecosystem integration features
+sync = ["leptos-sync-core"]
+enterprise = ["sync", "devtools", "persistence"]
 
 [dependencies]
 # Core Leptos 0.8 dependencies
@@ -63,6 +67,9 @@ web-sys = { version = "0.3", features = ["console", "Storage"] }
 js-sys = "0.3"
 wasm-bindgen = "0.2"
 wasm-bindgen-futures = "0.4"
+
+# Ecosystem integration (optional)
+leptos-sync-core = { version = "0.8.3", optional = true }
 
 # Development dependencies
 [dev-dependencies]

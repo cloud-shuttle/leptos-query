@@ -73,6 +73,7 @@ pub mod infinite;
 pub mod persistence;
 pub mod optimistic;
 pub mod devtools;
+pub mod sync;
 
 // Re-export main types and functions
 pub use client::{QueryClient, SerializedData, CacheEntry};
@@ -82,8 +83,11 @@ pub use retry::{QueryError, RetryConfig, execute_with_retry};
 pub use types::{QueryKey, QueryStatus, QueryMeta, QueryKeyPattern, QueryObserverId};
 pub use infinite::{use_infinite_query, InfiniteQueryOptions, InfiniteQueryResult, Page, PageInfo};
 pub use persistence::{PersistenceManager, PersistenceConfig, StorageBackend};
+#[cfg(feature = "persistence")]
+pub use persistence::{LocalStorageBackend, IndexedDBBackend};
 pub use optimistic::{OptimisticManager, OptimisticConfig, OptimisticUpdate, OptimisticStats};
 pub use devtools::{DevToolsManager, DevToolsConfig, DevToolsServer, QueryMetrics, NetworkRequest, CacheOperation, DevToolsEvent, DevToolsExport};
+pub use sync::{SyncManager, ConflictResolutionStrategy, NetworkStatus, SyncResult};
 
 /// Provide the QueryClient context to the app
 #[component]

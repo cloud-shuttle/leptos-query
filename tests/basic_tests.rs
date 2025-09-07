@@ -10,32 +10,7 @@ struct TestData {
     value: String,
 }
 
-async fn mock_fetch(id: u32) -> Result<TestData, QueryError> {
-    // Simulate network delay
-    sleep(Duration::from_millis(10)).await;
-    
-    if id == 0 {
-        return Err(QueryError::GenericError("Not found".to_string()));
-    }
-    
-    Ok(TestData {
-        id,
-        value: format!("Data {}", id),
-    })
-}
-
-async fn mock_mutate(data: TestData) -> Result<TestData, QueryError> {
-    sleep(Duration::from_millis(10)).await;
-    
-    if data.value.contains("error") {
-        return Err(QueryError::GenericError("Mutation failed".to_string()));
-    }
-    
-    Ok(TestData {
-        id: data.id + 1000,
-        value: format!("Mutated {}", data.value),
-    })
-}
+// Mock functions removed to eliminate warnings
 
 #[test]
 fn test_query_key_creation() {
@@ -126,20 +101,7 @@ fn test_query_client_creation() {
     assert_eq!(retrieved, test_data);
 }
 
-// Utility sleep function
-async fn sleep(duration: Duration) {
-    let promise = js_sys::Promise::new(&mut |resolve, _| {
-        web_sys::window()
-            .unwrap()
-            .set_timeout_with_callback_and_timeout_and_arguments_0(
-                &resolve, 
-                duration.as_millis() as i32
-            )
-            .unwrap();
-    });
-    
-    wasm_bindgen_futures::JsFuture::from(promise).await.unwrap();
-}
+// Sleep function removed to eliminate warnings
 
 // Integration test with Leptos runtime
 #[test]

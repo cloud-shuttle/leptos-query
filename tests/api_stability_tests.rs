@@ -3,7 +3,6 @@
 //! These tests verify that the public API is stable and works correctly
 //! with the documented usage patterns.
 
-use leptos::prelude::*;
 use leptos_query_rs::*;
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
@@ -13,15 +12,6 @@ struct User {
     id: u32,
     name: String,
     email: String,
-}
-
-async fn fetch_user(id: u32) -> Result<User, QueryError> {
-    // Simulate API call
-    Ok(User {
-        id,
-        name: "John Doe".to_string(),
-        email: "john@example.com".to_string(),
-    })
 }
 
 #[cfg(test)]

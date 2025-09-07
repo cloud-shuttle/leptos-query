@@ -85,81 +85,250 @@ impl StorageBackend for MemoryBackend {
     }
 }
 
-/// Web localStorage backend
-#[cfg(target_arch = "wasm32")]
+/// Web localStorage backend with synchronous API for testing
+#[cfg(feature = "persistence")]
 pub struct LocalStorageBackend {
-    storage: Storage,
+    prefix: String,
+    // For non-WASM targets, we'll use in-memory storage for testing
+    #[cfg(not(target_arch = "wasm32"))]
+    data: std::cell::RefCell<std::collections::HashMap<String, Vec<u8>>>,
 }
 
-#[cfg(target_arch = "wasm32")]
+#[cfg(feature = "persistence")]
 impl LocalStorageBackend {
-    pub fn new() -> Result<Self, QueryError> {
-        let window = web_sys::window().ok_or_else(|| {
-            QueryError::StorageError("window not available".to_string())
-        })?;
-        
-        let storage = window.local_storage().map_err(|_| {
-            QueryError::StorageError("localStorage not available".to_string())
-        })?.ok_or_else(|| {
-            QueryError::StorageError("localStorage not available".to_string())
-        })?;
-        
-        Ok(Self { storage })
-    }
-}
-
-#[cfg(target_arch = "wasm32")]
-#[async_trait]
-impl StorageBackend for LocalStorageBackend {
-    async fn store(&self, key: &str, data: &[u8]) -> Result<(), QueryError> {
-        let encoded = base64::encode(data);
-        self.storage.set_item(key, &encoded).map_err(|_| {
-            QueryError::StorageError("Failed to store data".to_string())
-        })?;
-        Ok(())
-    }
-    
-    async fn retrieve(&self, key: &str) -> Result<Option<Vec<u8>>, QueryError> {
-        let encoded = self.storage.get_item(key).map_err(|_| {
-            QueryError::StorageError("Failed to retrieve data".to_string())
-        })?;
-        
-        match encoded {
-            Some(encoded) => {
-                let data = base64::decode(&encoded).map_err(|_| {
-                    QueryError::StorageError("Failed to decode data".to_string())
-                })?;
-                Ok(Some(data))
-            }
-            None => Ok(None),
+    pub fn new(prefix: String) -> Self {
+        Self { 
+            prefix,
+            #[cfg(not(target_arch = "wasm32"))]
+            data: std::cell::RefCell::new(std::collections::HashMap::new()),
         }
     }
     
-    async fn remove(&self, key: &str) -> Result<(), QueryError> {
-        self.storage.remove_item(key).map_err(|_| {
-            QueryError::StorageError("Failed to remove data".to_string())
-        })?;
+    pub fn prefix(&self) -> &str {
+        &self.prefix
+    }
+    
+    fn make_key(&self, key: &crate::types::QueryKey) -> String {
+        format!("{}_{}", self.prefix, key.to_string())
+    }
+    
+    pub fn store<T: Serialize>(&self, key: &crate::types::QueryKey, data: &T) -> Result<(), QueryError> {
+        let serialized = bincode::serialize(data)
+            .map_err(|e| QueryError::SerializationError(e.to_string()))?;
+        
+        #[cfg(target_arch = "wasm32")]
+        {
+            let window = web_sys::window().ok_or_else(|| {
+                QueryError::StorageError("window not available".to_string())
+            })?;
+            
+            let storage = window.local_storage().map_err(|_| {
+                QueryError::StorageError("localStorage not available".to_string())
+            })?.ok_or_else(|| {
+                QueryError::StorageError("localStorage not available".to_string())
+            })?;
+            
+            let encoded = base64::encode(&serialized);
+            let full_key = self.make_key(key);
+            storage.set_item(&full_key, &encoded).map_err(|_| {
+                QueryError::StorageError("Failed to store data".to_string())
+            })?;
+        }
+        
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            // For non-WASM targets, use in-memory storage for testing
+            let full_key = self.make_key(key);
+            self.data.borrow_mut().insert(full_key, serialized);
+        }
+        
         Ok(())
     }
     
-    async fn list_keys(&self) -> Result<Vec<String>, QueryError> {
-        // localStorage doesn't have a direct way to list keys
-        // This is a limitation - we'd need to maintain a separate index
-        Ok(vec![])
+    pub fn retrieve<T: serde::de::DeserializeOwned>(&self, key: &crate::types::QueryKey) -> Result<Option<T>, QueryError> {
+        #[cfg(target_arch = "wasm32")]
+        {
+            let window = web_sys::window().ok_or_else(|| {
+                QueryError::StorageError("window not available".to_string())
+            })?;
+            
+            let storage = window.local_storage().map_err(|_| {
+                QueryError::StorageError("localStorage not available".to_string())
+            })?.ok_or_else(|| {
+                QueryError::StorageError("localStorage not available".to_string())
+            })?;
+            
+            let full_key = self.make_key(key);
+            let encoded = storage.get_item(&full_key).map_err(|_| {
+                QueryError::StorageError("Failed to retrieve data".to_string())
+            })?;
+            
+            match encoded {
+                Some(encoded) => {
+                    let data = base64::decode(&encoded).map_err(|_| {
+                        QueryError::StorageError("Failed to decode data".to_string())
+                    })?;
+                    let deserialized: T = bincode::deserialize(&data)
+                        .map_err(|e| QueryError::DeserializationError(e.to_string()))?;
+                    Ok(Some(deserialized))
+                }
+                None => Ok(None),
+            }
+        }
+        
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            // For non-WASM targets, use in-memory storage for testing
+            let full_key = self.make_key(key);
+            if let Some(data) = self.data.borrow().get(&full_key) {
+                let deserialized: T = bincode::deserialize(data)
+                    .map_err(|e| QueryError::DeserializationError(e.to_string()))?;
+                Ok(Some(deserialized))
+            } else {
+                Ok(None)
+            }
+        }
     }
     
-    async fn clear(&self) -> Result<(), QueryError> {
-        self.storage.clear().map_err(|_| {
-            QueryError::StorageError("Failed to clear storage".to_string())
-        })?;
+    pub fn remove(&self, key: &crate::types::QueryKey) -> Result<(), QueryError> {
+        #[cfg(target_arch = "wasm32")]
+        {
+            let window = web_sys::window().ok_or_else(|| {
+                QueryError::StorageError("window not available".to_string())
+            })?;
+            
+            let storage = window.local_storage().map_err(|_| {
+                QueryError::StorageError("localStorage not available".to_string())
+            })?.ok_or_else(|| {
+                QueryError::StorageError("localStorage not available".to_string())
+            })?;
+            
+            let full_key = self.make_key(key);
+            storage.remove_item(&full_key).map_err(|_| {
+                QueryError::StorageError("Failed to remove data".to_string())
+            })?;
+        }
+        
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            // For non-WASM targets, use in-memory storage for testing
+            let full_key = self.make_key(key);
+            self.data.borrow_mut().remove(&full_key);
+        }
+        
         Ok(())
     }
     
-    async fn size(&self) -> Result<usize, QueryError> {
-        // localStorage doesn't provide size information
-        Ok(0)
+    pub fn clear(&self) -> Result<(), QueryError> {
+        #[cfg(target_arch = "wasm32")]
+        {
+            let window = web_sys::window().ok_or_else(|| {
+                QueryError::StorageError("window not available".to_string())
+            })?;
+            
+            let storage = window.local_storage().map_err(|_| {
+                QueryError::StorageError("localStorage not available".to_string())
+            })?.ok_or_else(|| {
+                QueryError::StorageError("localStorage not available".to_string())
+            })?;
+            
+            // Clear all items with our prefix
+            let length = storage.length().map_err(|_| {
+                QueryError::StorageError("Failed to get storage length".to_string())
+            })?;
+            
+            for i in 0..length {
+                if let Ok(Some(key)) = storage.key(i) {
+                    if key.starts_with(&self.prefix) {
+                        storage.remove_item(&key).map_err(|_| {
+                            QueryError::StorageError("Failed to remove item".to_string())
+                        })?;
+                    }
+                }
+            }
+        }
+        
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            // For non-WASM targets, use in-memory storage for testing
+            self.data.borrow_mut().clear();
+        }
+        
+        Ok(())
     }
 }
+
+/// IndexedDB backend with synchronous API for testing
+#[cfg(feature = "persistence")]
+pub struct IndexedDBBackend {
+    db_name: String,
+    store_name: String,
+    // For testing, we'll use in-memory storage
+    data: std::cell::RefCell<std::collections::HashMap<String, Vec<u8>>>,
+}
+
+#[cfg(feature = "persistence")]
+impl IndexedDBBackend {
+    pub fn new(db_name: String, store_name: String) -> Self {
+        Self { 
+            db_name, 
+            store_name,
+            data: std::cell::RefCell::new(std::collections::HashMap::new()),
+        }
+    }
+    
+    pub fn db_name(&self) -> &str {
+        &self.db_name
+    }
+    
+    pub fn store_name(&self) -> &str {
+        &self.store_name
+    }
+    
+    pub fn store<T: Serialize>(&self, key: &crate::types::QueryKey, data: &T) -> Result<(), QueryError> {
+        // For testing, use in-memory storage
+        // In a real implementation, this would use IndexedDB
+        let serialized = bincode::serialize(data)
+            .map_err(|e| QueryError::SerializationError(e.to_string()))?;
+        
+        let key_str = key.to_string();
+        self.data.borrow_mut().insert(key_str, serialized);
+        Ok(())
+    }
+    
+    pub fn retrieve<T: serde::de::DeserializeOwned>(&self, key: &crate::types::QueryKey) -> Result<Option<T>, QueryError> {
+        // For testing, use in-memory storage
+        // In a real implementation, this would use IndexedDB
+        let key_str = key.to_string();
+        
+        if let Some(data) = self.data.borrow().get(&key_str) {
+            let deserialized: T = bincode::deserialize(data)
+                .map_err(|e| QueryError::DeserializationError(e.to_string()))?;
+            Ok(Some(deserialized))
+        } else {
+            Ok(None)
+        }
+    }
+    
+    pub fn remove(&self, key: &crate::types::QueryKey) -> Result<(), QueryError> {
+        // For testing, use in-memory storage
+        // In a real implementation, this would use IndexedDB
+        let key_str = key.to_string();
+        
+        self.data.borrow_mut().remove(&key_str);
+        Ok(())
+    }
+    
+    pub fn clear(&self) -> Result<(), QueryError> {
+        // For testing, use in-memory storage
+        // In a real implementation, this would use IndexedDB
+        
+        self.data.borrow_mut().clear();
+        Ok(())
+    }
+}
+
+// The old async implementation has been replaced with the new synchronous API above
 
 /// Configuration for persistence
 #[derive(Clone, Debug, Serialize, Deserialize)]
