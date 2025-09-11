@@ -171,8 +171,8 @@ mod tests {
 
         assert!(sync_result1.synced_operations > 0);
         assert!(sync_result2.synced_operations > 0);
-        assert!(sync_result1.conflicts_resolved >= 0);
-        assert!(sync_result2.conflicts_resolved >= 0);
+        assert!(sync_result1.conflicts_resolved > 0);
+        assert!(sync_result2.conflicts_resolved > 0);
     }
 
     #[tokio::test]

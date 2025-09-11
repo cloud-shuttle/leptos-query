@@ -80,6 +80,10 @@ web-sys = { version = "0.3", features = ["console"] }
 criterion = "0.7"
 rand = "0.9"
 proptest = "1.4"
+
+# Contract testing dependencies
+jsonschema = "0.18"
+# pact_consumer = "0.9"  # Commented out due to dependency conflicts
 # mutagen = "0.1"  # Not available, using manual mutation testing instead
 # mutagen-runner = "0.1"
 
@@ -115,6 +119,22 @@ path = "tests/property/cache_invariants.rs"
 [[test]]
 name = "mutation_tests"
 path = "tests/mutation/manual_mutation_tests.rs"
+
+[[test]]
+name = "schema_validation_tests"
+path = "tests/contracts/schema_validation_tests.rs"
+
+[[test]]
+name = "api_evolution_tests"
+path = "tests/contracts/api_evolution_tests.rs"
+
+[[test]]
+name = "compatibility_tests"
+path = "tests/contracts/compatibility_tests.rs"
+
+[[test]]
+name = "pact_consumer_tests"
+path = "tests/contracts/pact_consumer_tests.rs"
 
 [package.metadata.docs.rs]
 all-features = true

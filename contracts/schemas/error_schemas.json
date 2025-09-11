@@ -1,0 +1,168 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://api.leptos-query.rs/schemas/error_schemas.json",
+  "title": "Error Schemas",
+  "description": "Schema definitions for all error types in leptos-query",
+  "definitions": {
+    "QueryError": {
+      "title": "QueryError",
+      "description": "Error information for failed queries",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["NetworkError", "TimeoutError", "GenericError", "ValidationError"],
+          "description": "Type of error that occurred"
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000,
+          "description": "Human-readable error message"
+        },
+        "details": {
+          "type": ["string", "null"],
+          "maxLength": 2000,
+          "description": "Additional error details or context"
+        },
+        "code": {
+          "type": ["integer", "null"],
+          "minimum": 100,
+          "maximum": 599,
+          "description": "HTTP status code or custom error code"
+        },
+        "timestamp": {
+          "type": "integer",
+          "format": "int64",
+          "description": "Unix timestamp when error occurred"
+        },
+        "query_key": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "minItems": 1,
+          "maxItems": 10,
+          "additionalItems": false,
+          "description": "Query key that failed"
+        }
+      },
+      "required": ["type", "message"],
+      "additionalProperties": false,
+      "examples": [
+        {
+          "type": "NetworkError",
+          "message": "Connection failed",
+          "details": "Failed to connect to server at https://api.example.com",
+          "code": 503,
+          "timestamp": 1640995200000,
+          "query_key": ["user", "123"]
+        },
+        {
+          "type": "TimeoutError",
+          "message": "Request timeout",
+          "details": "Request exceeded 5000ms timeout",
+          "code": 408,
+          "timestamp": 1640995200000,
+          "query_key": ["posts", "user", "123"]
+        },
+        {
+          "type": "ValidationError",
+          "message": "Invalid query parameters",
+          "details": "Query key must contain at least one segment",
+          "code": 400,
+          "timestamp": 1640995200000,
+          "query_key": []
+        },
+        {
+          "type": "GenericError",
+          "message": "An unexpected error occurred",
+          "details": "Internal server error",
+          "code": 500,
+          "timestamp": 1640995200000,
+          "query_key": ["settings"]
+        }
+      ]
+    },
+    "ValidationError": {
+      "title": "ValidationError",
+      "description": "Error for validation failures",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "ValidationError"
+        },
+        "message": {
+          "type": "string",
+          "description": "Validation error message"
+        },
+        "field": {
+          "type": ["string", "null"],
+          "description": "Field that failed validation"
+        },
+        "value": {
+          "description": "Value that failed validation"
+        },
+        "constraint": {
+          "type": ["string", "null"],
+          "description": "Constraint that was violated"
+        }
+      },
+      "required": ["type", "message"],
+      "additionalProperties": false
+    },
+    "NetworkError": {
+      "title": "NetworkError",
+      "description": "Error for network-related failures",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "NetworkError"
+        },
+        "message": {
+          "type": "string",
+          "description": "Network error message"
+        },
+        "url": {
+          "type": ["string", "null"],
+          "format": "uri",
+          "description": "URL that failed"
+        },
+        "status_code": {
+          "type": ["integer", "null"],
+          "minimum": 100,
+          "maximum": 599,
+          "description": "HTTP status code"
+        }
+      },
+      "required": ["type", "message"],
+      "additionalProperties": false
+    },
+    "TimeoutError": {
+      "title": "TimeoutError",
+      "description": "Error for timeout failures",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "TimeoutError"
+        },
+        "message": {
+          "type": "string",
+          "description": "Timeout error message"
+        },
+        "timeout_ms": {
+          "type": ["integer", "null"],
+          "minimum": 0,
+          "description": "Timeout duration in milliseconds"
+        }
+      },
+      "required": ["type", "message"],
+      "additionalProperties": false
+    }
+  }
+}

@@ -1,0 +1,301 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Version Compatibility Matrix",
+  "description": "Compatibility matrix for leptos-query versions",
+  "type": "object",
+  "properties": {
+    "versions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/VersionInfo"
+      }
+    },
+    "compatibility_rules": {
+      "type": "object",
+      "patternProperties": {
+        "^[0-9]+\\.[0-9]+\\.[0-9]+$": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+          }
+        }
+      }
+    },
+    "breaking_changes": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/BreakingChange"
+      }
+    },
+    "deprecation_schedule": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Deprecation"
+      }
+    }
+  },
+  "required": ["versions", "compatibility_rules"],
+  "definitions": {
+    "VersionInfo": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        },
+        "release_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["current", "maintenance", "deprecated", "end_of_life"]
+        },
+        "breaking_changes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "new_features": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "bug_fixes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "security_fixes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "performance_improvements": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "minimum_rust_version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        },
+        "leptos_compatibility": {
+          "type": "object",
+          "properties": {
+            "min_version": {
+              "type": "string",
+              "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+            },
+            "max_version": {
+              "type": "string",
+              "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+            }
+          }
+        }
+      },
+      "required": ["version", "release_date", "status"]
+    },
+    "BreakingChange": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        },
+        "change_type": {
+          "type": "string",
+          "enum": ["api_breaking", "behavior_breaking", "dependency_breaking"]
+        },
+        "description": {
+          "type": "string"
+        },
+        "affected_apis": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "migration_guide": {
+          "type": "string"
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["low", "medium", "high", "critical"]
+        }
+      },
+      "required": ["version", "change_type", "description", "severity"]
+    },
+    "Deprecation": {
+      "type": "object",
+      "properties": {
+        "feature": {
+          "type": "string"
+        },
+        "deprecated_in": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        },
+        "removed_in": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        },
+        "replacement": {
+          "type": "string"
+        },
+        "migration_guide": {
+          "type": "string"
+        }
+      },
+      "required": ["feature", "deprecated_in", "removed_in"]
+    }
+  },
+  "examples": [
+    {
+      "versions": [
+        {
+          "version": "0.4.0",
+          "release_date": "2024-01-15",
+          "status": "deprecated",
+          "breaking_changes": [],
+          "new_features": [
+            "Basic query functionality",
+            "Cache management",
+            "Error handling"
+          ],
+          "bug_fixes": [],
+          "security_fixes": [],
+          "performance_improvements": [],
+          "minimum_rust_version": "1.70.0",
+          "leptos_compatibility": {
+            "min_version": "0.8.0",
+            "max_version": "0.8.3"
+          }
+        },
+        {
+          "version": "0.4.1",
+          "release_date": "2024-02-01",
+          "status": "deprecated",
+          "breaking_changes": [],
+          "new_features": [],
+          "bug_fixes": [
+            "Fixed memory leak in cache",
+            "Fixed race condition in concurrent queries"
+          ],
+          "security_fixes": [],
+          "performance_improvements": [
+            "Improved cache lookup performance",
+            "Reduced memory allocation"
+          ],
+          "minimum_rust_version": "1.70.0",
+          "leptos_compatibility": {
+            "min_version": "0.8.0",
+            "max_version": "0.8.3"
+          }
+        },
+        {
+          "version": "0.5.0",
+          "release_date": "2024-03-15",
+          "status": "maintenance",
+          "breaking_changes": [
+            "QueryOptions builder pattern changed",
+            "RetryConfig API updated"
+          ],
+          "new_features": [
+            "Infinite queries",
+            "Optimistic updates",
+            "DevTools integration",
+            "Persistence support"
+          ],
+          "bug_fixes": [
+            "Fixed cache invalidation edge case",
+            "Fixed error handling in mutations"
+          ],
+          "security_fixes": [],
+          "performance_improvements": [
+            "Optimized cache operations",
+            "Improved serialization performance"
+          ],
+          "minimum_rust_version": "1.70.0",
+          "leptos_compatibility": {
+            "min_version": "0.8.0",
+            "max_version": "0.8.5"
+          }
+        },
+        {
+          "version": "0.5.1",
+          "release_date": "2024-04-01",
+          "status": "current",
+          "breaking_changes": [],
+          "new_features": [
+            "Enhanced error handling",
+            "Better TypeScript support",
+            "Improved DevTools"
+          ],
+          "bug_fixes": [
+            "Fixed infinite query pagination",
+            "Fixed optimistic update rollback"
+          ],
+          "security_fixes": [
+            "Fixed potential XSS in DevTools"
+          ],
+          "performance_improvements": [
+            "Reduced bundle size",
+            "Faster query execution"
+          ],
+          "minimum_rust_version": "1.70.0",
+          "leptos_compatibility": {
+            "min_version": "0.8.0",
+            "max_version": "0.8.5"
+          }
+        }
+      ],
+      "compatibility_rules": {
+        "0.4.0": ["0.4.1"],
+        "0.4.1": ["0.4.0"],
+        "0.5.0": ["0.5.1"],
+        "0.5.1": ["0.5.0"]
+      },
+      "breaking_changes": [
+        {
+          "version": "0.5.0",
+          "change_type": "api_breaking",
+          "description": "QueryOptions builder pattern changed from new() to default()",
+          "affected_apis": ["QueryOptions::new()", "QueryOptions::with_stale_time()"],
+          "migration_guide": "Use QueryOptions::default() instead of QueryOptions::new()",
+          "severity": "medium"
+        },
+        {
+          "version": "0.5.0",
+          "change_type": "api_breaking",
+          "description": "RetryConfig constructor signature changed",
+          "affected_apis": ["RetryConfig::new()"],
+          "migration_guide": "Use RetryConfig::new(max_retries, base_delay) instead of old constructor",
+          "severity": "medium"
+        }
+      ],
+      "deprecation_schedule": [
+        {
+          "feature": "QueryOptions::new()",
+          "deprecated_in": "0.5.0",
+          "removed_in": "0.6.0",
+          "replacement": "QueryOptions::default()",
+          "migration_guide": "Replace QueryOptions::new() with QueryOptions::default()"
+        },
+        {
+          "feature": "RetryConfig::default() with old parameters",
+          "deprecated_in": "0.5.0",
+          "removed_in": "0.6.0",
+          "replacement": "RetryConfig::new(max_retries, base_delay)",
+          "migration_guide": "Use RetryConfig::new() with explicit parameters"
+        }
+      ]
+    }
+  ]
+}

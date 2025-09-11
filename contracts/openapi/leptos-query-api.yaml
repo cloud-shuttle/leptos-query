@@ -1,0 +1,498 @@
+openapi: 3.0.3
+info:
+  title: Leptos Query API
+  version: 0.5.1
+  description: |
+    A powerful, type-safe data fetching and caching library for Leptos 0.8 applications.
+    This API specification defines the contracts for all public APIs in the leptos-query library.
+  contact:
+    name: CloudShuttle Team
+    url: https://github.com/cloud-shuttle/leptos-query-rs
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://api.leptos-query.rs/v1
+    description: Production server
+  - url: https://staging-api.leptos-query.rs/v1
+    description: Staging server
+
+paths:
+  /query:
+    post:
+      summary: Execute a query
+      description: |
+        Executes a data fetching query with automatic caching and background updates.
+        This endpoint represents the core query functionality of the library.
+      operationId: executeQuery
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryRequest'
+            examples:
+              basic_query:
+                summary: Basic user query
+                value:
+                  key: ["user", "123"]
+                  options:
+                    enabled: true
+                    stale_time: 0
+                    cache_time: 300
+                    refetch_interval: null
+                    retry:
+                      max_retries: 3
+                      base_delay: 1000
+                      max_delay: 10000
+              disabled_query:
+                summary: Disabled query
+                value:
+                  key: ["user", "456"]
+                  options:
+                    enabled: false
+      responses:
+        '200':
+          description: Query executed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueryResponse'
+              examples:
+                success_response:
+                  summary: Successful query result
+                  value:
+                    data:
+                      id: 123
+                      name: "John Doe"
+                      email: "john@example.com"
+                    error: null
+                    status: "success"
+                    is_loading: false
+                    is_success: true
+                    is_error: false
+                loading_response:
+                  summary: Query in loading state
+                  value:
+                    data: null
+                    error: null
+                    status: "loading"
+                    is_loading: true
+                    is_success: false
+                    is_error: false
+                error_response:
+                  summary: Query failed
+                  value:
+                    data: null
+                    error:
+                      type: "NetworkError"
+                      message: "Connection failed"
+                      details: "Failed to connect to server"
+                    status: "error"
+                    is_loading: false
+                    is_success: false
+                    is_error: true
+        '400':
+          description: Bad request - invalid query parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /mutation:
+    post:
+      summary: Execute a mutation
+      description: |
+        Executes a data mutation with optimistic updates and automatic cache invalidation.
+        This endpoint represents the core mutation functionality of the library.
+      operationId: executeMutation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MutationRequest'
+            examples:
+              create_user:
+                summary: Create user mutation
+                value:
+                  variables:
+                    name: "Jane Doe"
+                    email: "jane@example.com"
+                  options:
+                    enabled: true
+                    retry:
+                      max_retries: 3
+                      base_delay: 1000
+                    invalidate_queries:
+                      - type: "Prefix"
+                        segments: ["users"]
+      responses:
+        '200':
+          description: Mutation executed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MutationResponse'
+        '400':
+          description: Bad request - invalid mutation parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /cache:
+    get:
+      summary: Get cache entry
+      description: Retrieve a cached query result by key
+      operationId: getCacheEntry
+      parameters:
+        - name: key
+          in: query
+          required: true
+          schema:
+            type: array
+            items:
+              type: string
+          example: ["user", "123"]
+      responses:
+        '200':
+          description: Cache entry found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CacheEntry'
+        '404':
+          description: Cache entry not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      summary: Set cache entry
+      description: Manually set a cache entry
+      operationId: setCacheEntry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CacheEntryRequest'
+      responses:
+        '200':
+          description: Cache entry set successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          description: Bad request - invalid cache entry
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      summary: Invalidate cache entries
+      description: Invalidate cache entries matching a pattern
+      operationId: invalidateCache
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvalidationRequest'
+      responses:
+        '200':
+          description: Cache entries invalidated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+components:
+  schemas:
+    QueryRequest:
+      type: object
+      required: [key, options]
+      properties:
+        key:
+          $ref: '#/components/schemas/QueryKey'
+        options:
+          $ref: '#/components/schemas/QueryOptions'
+      additionalProperties: false
+
+    QueryResponse:
+      type: object
+      required: [status, is_loading, is_success, is_error]
+      properties:
+        data:
+          type: object
+          nullable: true
+          description: The query result data
+        error:
+          $ref: '#/components/schemas/QueryError'
+        status:
+          $ref: '#/components/schemas/QueryStatus'
+        is_loading:
+          type: boolean
+          description: Whether the query is currently loading
+        is_success:
+          type: boolean
+          description: Whether the query completed successfully
+        is_error:
+          type: boolean
+          description: Whether the query failed
+      additionalProperties: false
+
+    MutationRequest:
+      type: object
+      required: [variables, options]
+      properties:
+        variables:
+          type: object
+          description: Variables to pass to the mutation function
+        options:
+          $ref: '#/components/schemas/MutationOptions'
+      additionalProperties: false
+
+    MutationResponse:
+      type: object
+      required: [status, is_loading, is_success, is_error]
+      properties:
+        data:
+          type: object
+          nullable: true
+          description: The mutation result data
+        error:
+          type: object
+          nullable: true
+          description: Error if mutation failed
+        is_loading:
+          type: boolean
+          description: Whether the mutation is currently loading
+        is_success:
+          type: boolean
+          description: Whether the mutation completed successfully
+        is_error:
+          type: boolean
+          description: Whether the mutation failed
+      additionalProperties: false
+
+    QueryKey:
+      type: array
+      items:
+        type: string
+      minItems: 1
+      description: Array of strings representing the query key
+      example: ["user", "123"]
+
+    QueryOptions:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+          default: true
+          description: Whether the query should run
+        stale_time:
+          type: integer
+          minimum: 0
+          default: 0
+          description: Time in milliseconds before data becomes stale
+        cache_time:
+          type: integer
+          minimum: 0
+          default: 300000
+          description: Time in milliseconds before data is removed from cache
+        refetch_interval:
+          type: integer
+          minimum: 0
+          nullable: true
+          description: Interval in milliseconds for background refetching
+        retry:
+          $ref: '#/components/schemas/RetryConfig'
+      additionalProperties: false
+
+    MutationOptions:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+          default: true
+          description: Whether the mutation should run
+        retry:
+          $ref: '#/components/schemas/RetryConfig'
+        invalidate_queries:
+          type: array
+          items:
+            $ref: '#/components/schemas/QueryKeyPattern'
+          nullable: true
+          description: Queries to invalidate on successful mutation
+      additionalProperties: false
+
+    RetryConfig:
+      type: object
+      properties:
+        max_retries:
+          type: integer
+          minimum: 0
+          default: 3
+          description: Maximum number of retry attempts
+        base_delay:
+          type: integer
+          minimum: 0
+          default: 1000
+          description: Base delay in milliseconds between retries
+        max_delay:
+          type: integer
+          minimum: 0
+          default: 10000
+          description: Maximum delay in milliseconds between retries
+      additionalProperties: false
+
+    QueryKeyPattern:
+      type: object
+      required: [type]
+      properties:
+        type:
+          type: string
+          enum: [Exact, Prefix, Contains]
+          description: Type of pattern matching
+        segments:
+          type: array
+          items:
+            type: string
+          description: Key segments for Exact and Prefix patterns
+        value:
+          type: string
+          description: String value for Contains pattern
+      additionalProperties: false
+
+    QueryStatus:
+      type: string
+      enum: [idle, loading, success, error]
+      description: Current status of the query
+
+    QueryError:
+      type: object
+      required: [type, message]
+      properties:
+        type:
+          type: string
+          enum: [NetworkError, TimeoutError, GenericError, ValidationError]
+          description: Type of error
+        message:
+          type: string
+          description: Human-readable error message
+        details:
+          type: string
+          nullable: true
+          description: Additional error details
+        code:
+          type: integer
+          nullable: true
+          description: Error code if applicable
+      additionalProperties: false
+
+    CacheEntry:
+      type: object
+      required: [key, data, timestamp, status]
+      properties:
+        key:
+          $ref: '#/components/schemas/QueryKey'
+        data:
+          type: object
+          description: Cached data
+        timestamp:
+          type: integer
+          format: int64
+          description: Unix timestamp when entry was created
+        status:
+          $ref: '#/components/schemas/QueryStatus'
+        stale_time:
+          type: integer
+          description: Time when data becomes stale
+        cache_time:
+          type: integer
+          description: Time when data expires from cache
+      additionalProperties: false
+
+    CacheEntryRequest:
+      type: object
+      required: [key, data]
+      properties:
+        key:
+          $ref: '#/components/schemas/QueryKey'
+        data:
+          type: object
+          description: Data to cache
+        stale_time:
+          type: integer
+          minimum: 0
+          description: Time in milliseconds before data becomes stale
+        cache_time:
+          type: integer
+          minimum: 0
+          description: Time in milliseconds before data expires
+      additionalProperties: false
+
+    InvalidationRequest:
+      type: object
+      required: [pattern]
+      properties:
+        pattern:
+          $ref: '#/components/schemas/QueryKeyPattern'
+      additionalProperties: false
+
+    SuccessResponse:
+      type: object
+      required: [success]
+      properties:
+        success:
+          type: boolean
+          description: Whether the operation was successful
+        message:
+          type: string
+          nullable: true
+          description: Optional success message
+      additionalProperties: false
+
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          $ref: '#/components/schemas/QueryError'
+      additionalProperties: false
+
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key for authentication
+
+security:
+  - ApiKeyAuth: []
+
+tags:
+  - name: Query
+    description: Data fetching operations
+  - name: Mutation
+    description: Data modification operations
+  - name: Cache
+    description: Cache management operations

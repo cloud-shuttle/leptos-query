@@ -1,0 +1,49 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://api.leptos-query.rs/schemas/retry_config.json",
+  "title": "RetryConfig",
+  "description": "Configuration for retry behavior on failed operations",
+  "type": "object",
+  "properties": {
+    "max_retries": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10,
+      "default": 3,
+      "description": "Maximum number of retry attempts"
+    },
+    "base_delay": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 60000,
+      "default": 1000,
+      "description": "Base delay in milliseconds between retries"
+    },
+    "max_delay": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 300000,
+      "default": 10000,
+      "description": "Maximum delay in milliseconds between retries"
+    }
+  },
+  "additionalProperties": false,
+  "required": ["max_retries", "base_delay", "max_delay"],
+  "examples": [
+    {
+      "max_retries": 3,
+      "base_delay": 1000,
+      "max_delay": 10000
+    },
+    {
+      "max_retries": 0,
+      "base_delay": 0,
+      "max_delay": 0
+    },
+    {
+      "max_retries": 5,
+      "base_delay": 2000,
+      "max_delay": 30000
+    }
+  ]
+}
